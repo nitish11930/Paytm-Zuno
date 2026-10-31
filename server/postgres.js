@@ -1466,7 +1466,7 @@ export function createPostgresRepository(pool) {
         "SELECT * FROM zuno.voice_drafts WHERE merchant = $1 AND expires > $2 ORDER BY expires DESC LIMIT 1",
         [m, Date.now()],
       );
-      if (!res.rows.length) return { active: false };
+      if (!res.rows.length) return null;
       const row = res.rows[0];
       const draft = JSON.parse(row.payload);
       const [stage, answer] = await this.question(m, draft, draft.language || "hinglish");

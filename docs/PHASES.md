@@ -101,3 +101,6 @@ Implemented complete 9-step merchant order, billing, and inventory flow per owne
 
 
 2026-10-31 15:52 IST — RELEASE VERIFIED: GitHub main pushed (app 2244011, migration/docs cfb092d). Render Free Docker service srv-dbis0je7bikc73dn9bog live at https://zuno-friend-test.onrender.com ; Blueprint exs-dbis028ae00c73chjcrg. Private credentials configured with owner permission; never commit privacy files. Live /api/health 200 reports postgres + voiceConfigured true + testAccessRequired true; isolated demo login/state 200; reminder proposal 201; actual Sarvam TTS 200 with audio. 64 local tests incl live PostgreSQL tests + build pass. Private demo access details: privacy/ZUNO_LIVE_LOGIN.txt. Free instance sleeps after inactivity; cold start can take ~50+ seconds per Render notice. Daily Sarvam counter is local ephemeral storage on free hosting; not a durable billing cap. WhatsApp Web handoff remains manual Send; no automatic delivery claim.
+
+
+2026-10-31 — Microphone-open blank-screen hotfix: reproduced live TypeError reading undefined draft.name. PostgreSQL no-current-draft response was {active:false}, unlike SQLite null. Return null and guard frontend restore on draft presence. Added isolated PostgreSQL repository regression. 10 voice tests + build passed; live redeploy verification required.

@@ -361,3 +361,9 @@ test("repayment question is concise and a saved entry allows a separate new draf
     if (old !== undefined) process.env.SARVAM_API_KEY = old;
   }
 });
+
+test("PostgreSQL empty voice workspace returns no draft instead of an entry-shaped placeholder", async () => {
+  const { createPostgresRepository } = await import("../server/postgres.js");
+  const repo = createPostgresRepository({ query: async () => ({ rows: [] }) });
+  assert.equal(await repo.currentVoiceLedger("empty-workspace"), null);
+});

@@ -80,7 +80,7 @@ export default function Voice({
         : api("/voice/ledger/current"),
     ]).then(([current]) => {
       if (!alive.current) return;
-      if (current.status === "fulfilled" && current.value) {
+      if (current.status === "fulfilled" && current.value?.draft) {
         ledgerRef.current = current.value;
         setLedger(current.value);
         setReply(current.value);
