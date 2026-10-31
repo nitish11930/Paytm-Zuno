@@ -939,7 +939,7 @@ function App() {
                   </span>
                   <strong>{money(state.pending)}</strong>
                   <small>
-                    {new Set(state.dues.map((d) => d.customerId)).size}{" "}
+                    {new Set(state.dues.map((d) => d.customerId || d.id)).size}{" "}
                     {lang === "hindi"
                       ? "ग्राहक खाते"
                       : lang === "hinglish"
@@ -1093,14 +1093,14 @@ function App() {
                   checked={
                     state.dues.length > 0 &&
                     state.dues.every((d) =>
-                      reminderSelection.includes(d.customerId),
+                      reminderSelection.includes(d.customerId || d.id),
                     )
                   }
                   disabled={!state.dues.length}
                   onChange={(e) =>
                     setReminderSelection(
                       e.target.checked
-                        ? [...new Set(state.dues.map((d) => d.customerId))]
+                        ? [...new Set(state.dues.map((d) => d.customerId || d.id).filter(Boolean))]
                         : [],
                     )
                   }
@@ -1113,47 +1113,50 @@ function App() {
               {!state.dues.length ? (
                 <Empty t={t} />
               ) : (
-                state.dues.map((d) => (
-                  <div className="due-card" key={d.id}>
-                    <div className="due-heading">
-                      <input
-                        type="checkbox"
-                        aria-label={`${t("selectReminder")} ${d.name}`}
-                        checked={reminderSelection.includes(d.customerId)}
-                        onChange={(e) =>
-                          setReminderSelection((ids) =>
-                            e.target.checked
-                              ? [...new Set([...ids, d.customerId])]
-                              : ids.filter((id) => id !== d.customerId),
-                          )
-                        }
-                      />
-                      <span className="customer-avatar">
-                        {d.name.charAt(0)}
-                      </span>
-                      <div>
-                        <strong>{d.name}</strong>
-                        <small>
-                          {shortDate(d.date, lang)} · {d.customerId.slice(0, 6)}
-                        </small>
+                state.dues.map((d) => {
+                  const dueCustomerId = d.customerId || d.id;
+                  return (
+                    <div className="due-card" key={d.id}>
+                      <div className="due-heading">
+                        <input
+                          type="checkbox"
+                          aria-label={`${t("selectReminder")} ${d.name || ""}`}
+                          checked={reminderSelection.includes(dueCustomerId)}
+                          onChange={(e) =>
+                            setReminderSelection((ids) =>
+                              e.target.checked
+                                ? [...new Set([...ids, dueCustomerId])]
+                                : ids.filter((id) => id !== dueCustomerId),
+                            )
+                          }
+                        />
+                        <span className="customer-avatar">
+                          {(d.name || "—").charAt(0)}
+                        </span>
+                        <div>
+                          <strong>{d.name || "—"}</strong>
+                          <small>
+                            {shortDate(d.date, lang)} · {(dueCustomerId || "").slice(0, 6)}
+                          </small>
+                        </div>
+                        <strong>{money(d.outstanding)}</strong>
                       </div>
-                      <strong>{money(d.outstanding)}</strong>
+                      <button
+                        className="secondary"
+                        onClick={() =>
+                          openEntry({
+                            kind: "collection",
+                            dueId: d.id,
+                            name: d.name,
+                          })
+                        }
+                      >
+                        {t("recordPayment")}
+                        <ArrowDownLeft size={17} />
+                      </button>
                     </div>
-                    <button
-                      className="secondary"
-                      onClick={() =>
-                        openEntry({
-                          kind: "collection",
-                          dueId: d.id,
-                          name: d.name,
-                        })
-                      }
-                    >
-                      {t("recordPayment")}
-                      <ArrowDownLeft size={17} />
-                    </button>
-                  </div>
-                ))
+                  );
+                })
               )}
               <button
                 className="primary"
@@ -1161,15 +1164,16 @@ function App() {
                   busy ||
                   !online ||
                   !state.dues.some((d) =>
-                    reminderSelection.includes(d.customerId),
+                    reminderSelection.includes(d.customerId || d.id),
                   )
                 }
                 onClick={() =>
                   prepare([
                     ...new Set(
                       state.dues
-                        .filter((d) => reminderSelection.includes(d.customerId))
-                        .map((d) => d.customerId),
+                        .filter((d) => reminderSelection.includes(d.customerId || d.id))
+                        .map((d) => d.customerId || d.id)
+                        .filter(Boolean),
                     ),
                   ])
                 }
@@ -1736,9 +1740,9 @@ function App() {
           )}
           {modal.type === "voice" && (
             <Voice
-              onViewLedger={(kind) => {
+              onViewLedger={() => {
                 setModal(null);
-                navigate(kind === "udhaar" ? "dues" : "khata");
+                navigate("khata");
               }}
               onSaved={async () => {
                 try {
@@ -2203,4 +2207,48 @@ function Ledger({ state, t, lang, EntryRows, openEntry, navigate }) {
     </>
   );
 }
-createRoot(document.getElementById("root")).render(<App />);
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error("ErrorBoundary caught:", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: "2rem", textAlign: "center", color: "#142523" }}>
+          <h2>Kuch takneeki dikkat aayi</h2>
+          <p style={{ color: "#d9534f", margin: "1rem 0" }}>{String(this.state.error?.message || "Unknown error")}</p>
+          <button
+            style={{
+              padding: "0.75rem 1.5rem",
+              background: "#00b9f1",
+              color: "#fff",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+            }}
+            onClick={() => {
+              this.setState({ hasError: false, error: null });
+              window.location.reload();
+            }}
+          >
+            Reload Karein
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+createRoot(document.getElementById("root")).render(
+  <ErrorBoundary>
+    <App />
+  </ErrorBoundary>,
+);

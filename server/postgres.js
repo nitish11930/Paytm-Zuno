@@ -223,9 +223,19 @@ export function createPostgresRepository(pool) {
           [3, "Amit", 250000],
           [4, "Neha", 250000],
         ]) {
+          const entryId = `due-${m}-${i}`;
+          const custId = randomUUID();
+          await client.query(
+            "INSERT INTO zuno.customers (id, merchant, name, legacy) VALUES ($1, $2, $3, 1)",
+            [custId, m, name],
+          );
           await client.query(
             "INSERT INTO zuno.entries (id, merchant, kind, amount, name, method, date, note, due_id, source, request_key) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
-            [`due-${m}-${i}`, m, "udhaar", amount, name, "cash", day(-i), "", null, "merchant", `seed-due-${i}`],
+            [entryId, m, "udhaar", amount, name, "cash", day(-i), "", null, "merchant", `seed-due-${i}`],
+          );
+          await client.query(
+            "INSERT INTO zuno.entry_customers (entry_id, customer_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
+            [entryId, custId],
           );
         }
 
@@ -303,8 +313,30 @@ export function createPostgresRepository(pool) {
     },
 
     // --- DUES & RECONCILIATION ---
+    async linkCustomers(m, client = null) {
+      const runner = client || pool;
+      const res = await runner.query(
+        `SELECT id, name FROM zuno.entries
+         WHERE merchant = $1 AND kind = 'udhaar'
+           AND NOT EXISTS (SELECT 1 FROM zuno.entry_customers ec WHERE ec.entry_id = entries.id)`,
+        [m],
+      );
+      for (const r of res.rows) {
+        const custId = randomUUID();
+        await runner.query(
+          "INSERT INTO zuno.customers (id, merchant, name, legacy) VALUES ($1, $2, $3, 1)",
+          [custId, m, r.name],
+        );
+        await runner.query(
+          "INSERT INTO zuno.entry_customers (entry_id, customer_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
+          [r.id, custId],
+        );
+      }
+    },
+
     async dues(m, client = null) {
       const runner = client || pool;
+      await this.linkCustomers(m, runner);
       const res = await runner.query(`
         SELECT e.*, c.customer_id as customer_id
         FROM zuno.entries e
@@ -334,7 +366,7 @@ export function createPostgresRepository(pool) {
         if (outstanding > 0) {
           pending.push({
             id: e.id,
-            customerId: e.customer_id || null,
+            customerId: e.customer_id || e.id,
             name: e.name,
             amount: Number(e.amount),
             outstanding,

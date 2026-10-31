@@ -130,3 +130,11 @@ Hotfix verified: 52b772c deployed successfully on Render (dep-dbisdp6tlv9c73bjo0
 - Fixed PostgreSQL voice draft updates to use `applyVoiceFields` under transactional client checkout.
 - Updated `render.yaml` with `autoDeployTrigger: commit`.
 - Full 66 tests pass across unit, integration, and live Supabase suites. Pushed to `https://github.com/nitish11930/Paytm-Zuno` (commit `abf86dd`).
+
+2026-10-31 17:05 IST — Khata view & Dues blank page hotfix:
+- Fixed "Khata mein dekhein" button navigation: `onViewLedger` now navigates directly to `khata` tab as expected by merchant rather than jumping to `dues`.
+- Fixed dues customerId crash: added `linkCustomers` in PostgreSQL `dues()` and `seedDemoMerchant`, plus fallback `customerId: e.customer_id || e.id`.
+- Defensive frontend handling: guarded `d.customerId?.slice` with `(d.customerId || d.id || "").slice(0, 6)` and ensured reminder checkboxes use `d.customerId || d.id`.
+- Added top-level React `ErrorBoundary` so uncaught rendering exceptions display a safe retry UI instead of an unrecoverable blank white screen.
+- 66 tests pass, production bundle built cleanly in 1.2s. Pushed to `origin main`.
+
