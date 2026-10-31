@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary-container": "#00856a", "outline": "#6e7a74", "on-primary-fixed-variant": "#00513f", "secondary-fixed-dim": "#9bd1c3", "on-tertiary-container": "#fafff9", "on-surface": "#0d1e1d", "surface-container-low": "#e4f8f4", "surface-bright": "#eafefa", "on-secondary-container": "#396d62", "secondary": "#33675c", "inverse-primary": "#73d9b9", "surface-container": "#def2ee", "secondary-fixed": "#b7eedf", "on-tertiary": "#ffffff", "primary-fixed-dim": "#73d9b9", "on-primary": "#ffffff", "on-background": "#0d1e1d", "on-secondary-fixed": "#00201a", "surface-container-lowest": "#ffffff", "on-tertiary-fixed-variant": "#005236", "surface-dim": "#cbdeda", "surface": "#eafefa", "surface-variant": "#d3e7e3", "on-tertiary-fixed": "#002113", "tertiary-container": "#00865b", "on-secondary": "#ffffff", "inverse-surface": "#233431", "primary": "#006953", "surface-tint": "#006b55", "background": "#eafefa", "error-container": "#ffdad6", "secondary-container": "#b7eedf", "inverse-on-surface": "#e1f5f1", "tertiary-fixed": "#71fbbd", "on-surface-variant": "#3e4944", "tertiary": "#006a47", "on-primary-container": "#fafffb", "error": "#ba1a1a", "on-secondary-fixed-variant": "#184f45", "on-primary-fixed": "#002118", "surface-container-high": "#d9ece9", "primary-fixed": "#8ff6d5", "on-error": "#ffffff", "on-error-container": "#93000a", "tertiary-fixed-dim": "#51dea3", "surface-container-highest": "#d3e7e3", "outline-variant": "#bdc9c3" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-md": "1rem", "space-2xl": "2.5rem", "space-xs": "0.5rem", "margin": "1.25rem", "space-2xs": "0.25rem", "space-lg": "1.5rem", "gutter-mobile": "0.75rem", "gutter": "1rem", "margin-mobile": "1rem", "space-xl": "2rem", "space-sm": "0.75rem" }, fontFamily: { "label-badge": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], "label-btn": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "display-hero": ["Plus Jakarta Sans"], "body-sm": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "title-currency-lg": ["Plus Jakarta Sans"], "caption": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "title-currency-md": ["Plus Jakarta Sans"], "display-hero-mobile": ["Plus Jakarta Sans"] }, fontSize: { "label-badge": ["11px", { lineHeight: "14px", letterSpacing: "0.02em", fontWeight: "700" }], "headline-sm": ["16px", { lineHeight: "24px", fontWeight: "600" }], "headline-lg": ["22px", { lineHeight: "30px", letterSpacing: "-0.01em", fontWeight: "700" }], "label-btn": ["15px", { lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "600" }], "body-lg": ["15px", { lineHeight: "22px", fontWeight: "500" }], "display-hero": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "700" }], "body-sm": ["12px", { lineHeight: "18px", fontWeight: "400" }], "headline-md": ["18px", { lineHeight: "26px", letterSpacing: "-0.005em", fontWeight: "600" }], "title-currency-lg": ["28px", { lineHeight: "36px", letterSpacing: "-0.02em", fontWeight: "700" }], "caption": ["11px", { lineHeight: "16px", fontWeight: "500" }], "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }], "title-currency-md": ["20px", { lineHeight: "28px", fontWeight: "700" }], "display-hero-mobile": ["26px", { lineHeight: "34px", letterSpacing: "-0.015em", fontWeight: "700" }] } } } };</script><style>@layer base{html,body{width:100%;margin:0;padding:0;min-height:100%;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-background font-body-md text-body-md text-on-surface antialiased flex flex-col min-h-full"><header class="fixed top-0 inset-x-0 z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_4px_20px_rgba(0,105,83,0.06)]"><div class="h-16 px-margin-mobile flex items-center justify-between"><div class="flex items-center gap-space-xs"><div class="w-11 h-11 rounded-xl bg-surface-container flex items-center justify-center text-primary shadow-[0_2px_8px_rgba(0,105,83,0.08)]"><span class="material-symbols-outlined text-[24px]">storefront</span></div><div class="flex flex-col"><div class="flex items-center gap-1.5"><span class="font-headline-sm text-headline-sm text-on-surface leading-tight">Ramesh Kirana</span><span class="inline-flex items-center px-1.5 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-caption text-caption font-semibold leading-none">PRO</span></div><div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-primary-container animate-pulse"></span><span class="font-caption text-caption text-on-surface-variant font-medium">Paytm Soundbox Active</span></div></div></div><div class="flex items-center gap-space-2xs"><button aria-label="Notifications" class="w-11 h-11 rounded-full flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container/60 transition-colors"><span class="material-symbols-outlined text-[22px]">notifications</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center ml-1"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-28 bg-background"><div class="flex flex-col w-full px-margin-mobile pb-8 gap-space-md">
+<!-- Search & Voice Lookup Bar -->
+<div class="w-full relative flex items-center">
+<div class="w-full bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(0,105,83,0.05)] flex items-center px-3.5 py-2.5 gap-2.5">
+<span class="material-symbols-outlined text-outline text-[22px]">search</span>
+<input class="w-full bg-transparent border-0 outline-none font-body-md text-body-md text-on-surface placeholder:text-outline focus:ring-0 p-0" id="khataSearchInput" placeholder="Grahak ya bill khojein..." type="text"/>
+<button aria-label="Filter customer list" class="w-8 h-8 rounded-lg bg-surface-container-low text-primary flex items-center justify-center transition-colors active:scale-95">
+<span class="material-symbols-outlined text-[18px]">tune</span>
+</button>
+</div>
+</div>
+<!-- Outstanding Dues Summary Hero Card -->
+<section class="w-full relative overflow-hidden rounded-xl bg-gradient-to-br from-primary to-primary-container text-on-primary p-space-md shadow-[0_10px_28px_rgba(0,105,83,0.22)]">
+<!-- Decorative Ambient Wave Glyphs -->
+<div class="absolute -right-8 -bottom-10 w-44 h-44 rounded-full bg-tertiary-fixed-dim/15 blur-2xl pointer-events-none"></div>
+<div class="absolute -top-10 -left-6 w-32 h-32 rounded-full bg-secondary-fixed/10 blur-xl pointer-events-none"></div>
+<div class="relative z-10 flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-tertiary-fixed text-[18px]">account_balance_wallet</span>
+<span class="font-caption text-caption uppercase tracking-wider text-surface-container-high font-semibold">Kul Pending Udhaar</span>
+</div>
+<div class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-on-primary-container/20 backdrop-blur-md text-on-primary font-caption text-caption font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary-fixed animate-ping"></span>
+<span>4 Grahak ka baaki</span>
+</div>
+</div>
+<div class="flex items-baseline justify-between pt-0.5">
+<div>
+<span class="font-display-hero-mobile text-display-hero-mobile tracking-tight text-on-primary font-extrabold">₹10,000</span>
+<span class="font-caption text-caption text-surface-container-high ml-1">kul 6 entries</span>
+</div>
+<!-- Micro Action Pill -->
+<button class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-gradient-to-r from-secondary-container to-tertiary-fixed text-on-secondary-fixed shadow-[0_4px_14px_rgba(0,33,24,0.18)] active:scale-95 transition-all font-label-badge text-label-badge font-bold" id="sabkoReminderBtn">
+<span class="material-symbols-outlined text-[16px] animate-bounce">send</span>
+<span>Sabko Reminder (4)</span>
+</button>
+</div>
+<!-- Quick Trust Metric Strip -->
+<div class="pt-2 flex items-center justify-between text-surface-container-high">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-tertiary-fixed">verified_user</span>
+<span class="font-caption text-caption text-on-primary-container">Auto-sync with Soundbox</span>
+</div>
+<span class="font-caption text-caption text-surface-container-high">Updated Abhi</span>
+</div>
+</div>
+</section>
+<!-- Filter Chips Horizontal Scroll -->
+<div class="w-full flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5" id="chipContainer">
+<button class="filter-chip active flex-shrink-0 px-3.5 py-1.5 rounded-full bg-primary text-on-primary font-label-badge text-label-badge font-bold shadow-sm transition-all" data-filter="all">
+      Sabhi (All) <span class="ml-1 opacity-80 text-surface-container-low font-normal">4</span>
+</button>
+<button class="filter-chip flex-shrink-0 px-3.5 py-1.5 rounded-full bg-surface-container-lowest text-on-surface-variant font-label-badge text-label-badge font-semibold shadow-sm transition-all" data-filter="pending">
+      Pending Udhaar
+    </button>
+<button class="filter-chip flex-shrink-0 px-3.5 py-1.5 rounded-full bg-surface-container-lowest text-on-surface-variant font-label-badge text-label-badge font-semibold shadow-sm transition-all" data-filter="today">
+      Aaj ki Vasooli
+    </button>
+<button class="filter-chip flex-shrink-0 px-3.5 py-1.5 rounded-full bg-surface-container-lowest text-on-surface-variant font-label-badge text-label-badge font-semibold shadow-sm transition-all" data-filter="overdue">
+      Overdue (&gt;7 Din)
+    </button>
+</div>
+<!-- Customer Ledger List -->
+<section class="flex flex-col gap-2.5 w-full" id="customerLedgerList">
+<!-- Row 1: Sharma ji -->
+<article class="ledger-row w-full bg-surface-container-lowest rounded-xl p-space-md shadow-[0_3px_14px_rgba(0,105,83,0.04)] flex flex-col gap-3 transition-transform active:scale-[0.99]" data-type="pending overdue">
+<div class="flex items-start justify-between gap-3">
+<div class="flex items-center gap-3">
+<div class="relative w-11 h-11 rounded-xl bg-surface-container flex items-center justify-center text-primary font-headline-sm text-headline-sm font-bold flex-shrink-0">
+<span>SJ</span>
+<span class="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-error rounded-full ring-2 ring-surface-container-lowest flex items-center justify-center">
+<span class="w-1.5 h-1.5 rounded-full bg-on-error"></span>
+</span>
+</div>
+<div class="flex flex-col min-w-0">
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold truncate leading-snug">Sharma ji</h2>
+<div class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+<span class="font-body-sm text-body-sm truncate">Ganesh Colony</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col items-end flex-shrink-0">
+<span class="font-headline-md text-headline-md text-on-surface font-bold">₹5,000</span>
+<span class="font-caption text-caption text-error font-semibold">Due in 2 days</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-1">
+<div class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-badge text-label-badge">
+<span class="material-symbols-outlined text-[13px] text-outline">schedule</span>
+<span>Needs Review</span>
+</div>
+<div class="flex items-center gap-2">
+<button aria-label="Call Sharma ji" class="w-9 h-9 rounded-full bg-surface-container-low text-secondary flex items-center justify-center active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[18px]">call</span>
+</button>
+<button aria-label="WhatsApp reminder to Sharma ji" class="whatsapp-btn inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-secondary-container text-on-secondary-container font-label-badge text-label-badge font-bold active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[16px]">chat</span>
+<span>WhatsApp</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Row 2: Verma Cloth Store -->
+<article class="ledger-row w-full bg-surface-container-lowest rounded-xl p-space-md shadow-[0_3px_14px_rgba(0,105,83,0.04)] flex flex-col gap-3 transition-transform active:scale-[0.99]" data-type="overdue pending">
+<div class="flex items-start justify-between gap-3">
+<div class="flex items-center gap-3">
+<div class="relative w-11 h-11 rounded-xl bg-surface-container-high flex items-center justify-center text-secondary font-headline-sm text-headline-sm font-bold flex-shrink-0">
+<span>VC</span>
+</div>
+<div class="flex flex-col min-w-0">
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold truncate leading-snug">Verma Cloth Store</h2>
+<div class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]">storefront</span>
+<span class="font-body-sm text-body-sm truncate">Main Market, Gate 2</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col items-end flex-shrink-0">
+<span class="font-headline-md text-headline-md text-on-surface font-bold">₹2,500</span>
+<span class="font-caption text-caption text-error font-semibold">Overdue 4 days</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-1">
+<div class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-container text-secondary font-label-badge text-label-badge font-semibold">
+<span class="material-symbols-outlined text-[13px] text-primary">mark_chat_read</span>
+<span>Reminder Sent (Kal)</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="paylink-btn inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-primary-container text-on-primary-container font-label-badge text-label-badge font-bold shadow-sm active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[16px]">qr_code_2</span>
+<span>Pay Link</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Row 3: Pooja General Store -->
+<article class="ledger-row w-full bg-surface-container-lowest rounded-xl p-space-md shadow-[0_3px_14px_rgba(0,105,83,0.04)] flex flex-col gap-3 transition-transform active:scale-[0.99]" data-type="today pending">
+<div class="flex items-start justify-between gap-3">
+<div class="flex items-center gap-3">
+<div class="relative w-11 h-11 rounded-xl bg-secondary-fixed flex items-center justify-center text-on-secondary-fixed font-headline-sm text-headline-sm font-bold flex-shrink-0">
+<span>PG</span>
+</div>
+<div class="flex flex-col min-w-0">
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold truncate leading-snug">Pooja General Store</h2>
+<div class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]">receipt_long</span>
+<span class="font-body-sm text-body-sm truncate">Bill #2841 • Ration Udhaar</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col items-end flex-shrink-0">
+<span class="font-headline-md text-headline-md text-primary font-bold">₹1,800</span>
+<span class="font-caption text-caption text-secondary font-semibold">Due Today</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-1">
+<div class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-container-low text-primary font-label-badge text-label-badge font-semibold">
+<span class="material-symbols-outlined text-[13px] text-primary">verified</span>
+<span>Merchant-confirmed</span>
+</div>
+<button class="vasooli-btn inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-badge text-label-badge font-bold active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[15px]">currency_rupee</span>
+<span>Vasooli Darj Karein</span>
+</button>
+</div>
+</article>
+<!-- Row 4: Deepak Provision -->
+<article class="ledger-row w-full bg-surface-container-lowest rounded-xl p-space-md shadow-[0_3px_14px_rgba(0,105,83,0.04)] flex flex-col gap-3 transition-transform active:scale-[0.99]" data-type="today">
+<div class="flex items-start justify-between gap-3">
+<div class="flex items-center gap-3">
+<div class="relative w-11 h-11 rounded-xl bg-surface-container-low flex items-center justify-center text-primary-container font-headline-sm text-headline-sm font-bold flex-shrink-0">
+<span>DP</span>
+</div>
+<div class="flex flex-col min-w-0">
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold truncate leading-snug">Deepak Provision</h2>
+<div class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]">smartphone</span>
+<span class="font-body-sm text-body-sm truncate">UPI Soundbox Auto-reconciled</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col items-end flex-shrink-0">
+<span class="font-headline-md text-headline-md text-on-surface font-bold">₹700</span>
+<span class="font-caption text-caption text-secondary font-semibold">Settled Just Now</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-1">
+<div class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-container text-primary font-label-badge text-label-badge font-semibold">
+<span class="material-symbols-outlined text-[13px] text-primary" style="font-variation-settings: 'FILL' 1;">done_all</span>
+<span>Payment Matched</span>
+</div>
+<button aria-label="View Deepak Provision receipt" class="w-9 h-9 rounded-full bg-surface-container-low text-on-surface-variant flex items-center justify-center active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[18px]">receipt</span>
+</button>
+</div>
+</article>
+</section>
+<!-- Sticky Quick Action Pill (Popped above Bottom Shell Dock) -->
+<div class="fixed bottom-24 inset-x-0 z-40 px-margin-mobile flex justify-center pointer-events-none">
+<button class="pointer-events-auto inline-flex items-center gap-2 px-5 py-3 rounded-full bg-primary text-on-primary font-label-btn text-label-btn font-bold shadow-[0_8px_24px_rgba(0,105,83,0.38)] active:scale-95 transition-all hover:bg-primary-container" id="addCustomerBtn">
+<span class="material-symbols-outlined text-[20px]">person_add</span>
+<span>+ Naya Khata / Customer</span>
+</button>
+</div>
+<!-- Notification Toast Container for Interactions -->
+<div class="fixed top-20 inset-x-4 z-50 transform -translate-y-20 opacity-0 pointer-events-none transition-all duration-300 flex justify-center" id="khataToast">
+<div class="bg-inverse-surface text-inverse-on-surface px-4 py-2.5 rounded-full shadow-lg flex items-center gap-2 font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-inverse-primary text-[18px]">check_circle</span>
+<span id="khataToastMsg">Reminder bheja gaya!</span>
+</div>
+</div>
+</div>
+<script>
+  // Filter chips micro-interaction
+  const chips = document.querySelectorAll('.filter-chip');
+  const rows = document.querySelectorAll('.ledger-row');
+
+  chips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      chips.forEach(c => {
+        c.classList.remove('bg-primary', 'text-on-primary');
+        c.classList.add('bg-surface-container-lowest', 'text-on-surface-variant');
+      });
+      chip.classList.remove('bg-surface-container-lowest', 'text-on-surface-variant');
+      chip.classList.add('bg-primary', 'text-on-primary');
+
+      const filterVal = chip.getAttribute('data-filter');
+      rows.forEach(row => {
+        const rowTypes = row.getAttribute('data-type') || '';
+        if (filterVal === 'all' || rowTypes.includes(filterVal)) {
+          row.style.display = 'flex';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    });
+  });
+
+  // Client-side quick search filter
+  const searchInput = document.getElementById('khataSearchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase().trim();
+      rows.forEach(row => {
+        const textContent = row.textContent.toLowerCase();
+        if (textContent.includes(query)) {
+          row.style.display = 'flex';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    });
+  }
+
+  // Toast feedback helper
+  const showToast = (message) => {
+    const toast = document.getElementById('khataToast');
+    const toastMsg = document.getElementById('khataToastMsg');
+    if (!toast || !toastMsg) return;
+    toastMsg.textContent = message;
+    toast.classList.remove('-translate-y-20', 'opacity-0');
+    toast.classList.add('translate-y-0', 'opacity-100');
+    setTimeout(() => {
+      toast.classList.remove('translate-y-0', 'opacity-100');
+      toast.classList.add('-translate-y-20', 'opacity-0');
+    }, 2400);
+  };
+
+  // Micro-actions listener bindings
+  document.querySelectorAll('.whatsapp-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showToast('WhatsApp reminder bhej diya gaya hai!');
+    });
+  });
+
+  document.querySelectorAll('.paylink-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showToast('Payment link SMS & WhatsApp par share kiya!');
+    });
+  });
+
+  document.querySelectorAll('.vasooli-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showToast('Vasooli darj karne ka form khul raha hai...');
+    });
+  });
+
+  const sabkoReminderBtn = document.getElementById('sabkoReminderBtn');
+  if (sabkoReminderBtn) {
+    sabkoReminderBtn.addEventListener('click', () => {
+      showToast('Sabhi 4 grahako ko auto-reminders bhej diye!');
+    });
+  }
+
+  const addCustomerBtn = document.getElementById('addCustomerBtn');
+  if (addCustomerBtn) {
+    addCustomerBtn.addEventListener('click', () => {
+      showToast('Naya Grahak jodne ke liye Munim tayyar hai!');
+    });
+  }
+</script></main><div class="fixed bottom-0 inset-x-0 z-50 pointer-events-none pb-safe"><div class="px-margin-mobile pb-3 pt-1 flex justify-center"><nav class="pointer-events-auto w-full max-w-[420px] h-[68px] rounded-full bg-surface-container-lowest/90 backdrop-blur-2xl shadow-[0_12px_36px_rgba(0,105,83,0.18)] px-3 flex items-center justify-between relative" data-active-classes="text-primary font-bold"><div class="flex items-center justify-around flex-1 pr-7"><a class="flex flex-col items-center justify-center gap-0.5 min-w-[52px] h-12 text-on-surface-variant transition-colors" data-path="home" href="#"><span class="material-symbols-outlined text-[22px]">dashboard</span><span class="font-caption text-caption">Home</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-0.5 min-w-[52px] h-12 transition-colors text-primary font-bold" data-path="khata-ledger" href="#"><span class="material-symbols-outlined text-[22px]">menu_book</span><span class="font-caption text-caption">Khata</span></a></div><div class="absolute left-1/2 -top-5 -translate-x-1/2 flex flex-col items-center pointer-events-auto"><button aria-label="Munim se bolo voice entry" class="w-[58px] h-[58px] rounded-full bg-gradient-to-tr from-primary to-primary-container text-on-primary flex items-center justify-center shadow-[0_10px_24px_rgba(0,133,106,0.45)] hover:scale-105 active:scale-95 transition-transform ring-4 ring-surface-container-lowest"><span class="material-symbols-outlined text-[28px] animate-pulse">mic</span></button><span class="font-caption text-caption font-bold text-primary mt-1 drop-shadow-sm">Bolo</span></div><div class="flex items-center justify-around flex-1 pl-7"><a class="flex flex-col items-center justify-center gap-0.5 min-w-[52px] h-12 text-on-surface-variant transition-colors" data-path="cash-plan" href="#"><span class="material-symbols-outlined text-[22px]">trending_up</span><span class="font-caption text-caption">Plan</span></a><a class="flex flex-col items-center justify-center gap-0.5 min-w-[52px] h-12 text-on-surface-variant transition-colors" data-path="shop-profile" href="#"><span class="material-symbols-outlined text-[22px]">store</span><span class="font-caption text-caption">Profile</span></a></div></nav></div></div></body></html>

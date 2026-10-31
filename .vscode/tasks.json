@@ -1,0 +1,1 @@
+{"version":"2.0.0","tasks":[{"label":"Munim: start local app","type":"npm","script":"dev","isBackground":true,"problemMatcher":[]},{"label":"Munim: tests and build","type":"npm","script":"check","group":{"kind":"test","isDefault":true},"problemMatcher":[]}]}

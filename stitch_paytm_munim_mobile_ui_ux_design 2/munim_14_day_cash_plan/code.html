@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary-container": "#00856a", "outline": "#6e7a74", "on-primary-fixed-variant": "#00513f", "secondary-fixed-dim": "#9bd1c3", "on-tertiary-container": "#fafff9", "on-surface": "#0d1e1d", "surface-container-low": "#e4f8f4", "surface-bright": "#eafefa", "on-secondary-container": "#396d62", "secondary": "#33675c", "inverse-primary": "#73d9b9", "surface-container": "#def2ee", "secondary-fixed": "#b7eedf", "on-tertiary": "#ffffff", "primary-fixed-dim": "#73d9b9", "on-primary": "#ffffff", "on-background": "#0d1e1d", "on-secondary-fixed": "#00201a", "surface-container-lowest": "#ffffff", "on-tertiary-fixed-variant": "#005236", "surface-dim": "#cbdeda", "surface": "#eafefa", "surface-variant": "#d3e7e3", "on-tertiary-fixed": "#002113", "tertiary-container": "#00865b", "on-secondary": "#ffffff", "inverse-surface": "#233431", "primary": "#006953", "surface-tint": "#006b55", "background": "#eafefa", "error-container": "#ffdad6", "secondary-container": "#b7eedf", "inverse-on-surface": "#e1f5f1", "tertiary-fixed": "#71fbbd", "on-surface-variant": "#3e4944", "tertiary": "#006a47", "on-primary-container": "#fafffb", "error": "#ba1a1a", "on-secondary-fixed-variant": "#184f45", "on-primary-fixed": "#002118", "surface-container-high": "#d9ece9", "primary-fixed": "#8ff6d5", "on-error": "#ffffff", "on-error-container": "#93000a", "tertiary-fixed-dim": "#51dea3", "surface-container-highest": "#d3e7e3", "outline-variant": "#bdc9c3" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-md": "1rem", "space-2xl": "2.5rem", "space-xs": "0.5rem", "margin": "1.25rem", "space-2xs": "0.25rem", "space-lg": "1.5rem", "gutter-mobile": "0.75rem", "gutter": "1rem", "margin-mobile": "1rem", "space-xl": "2rem", "space-sm": "0.75rem" }, fontFamily: { "label-badge": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], "label-btn": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "display-hero": ["Plus Jakarta Sans"], "body-sm": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "title-currency-lg": ["Plus Jakarta Sans"], "caption": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "title-currency-md": ["Plus Jakarta Sans"], "display-hero-mobile": ["Plus Jakarta Sans"] }, fontSize: { "label-badge": ["11px", { lineHeight: "14px", letterSpacing: "0.02em", fontWeight: "700" }], "headline-sm": ["16px", { lineHeight: "24px", fontWeight: "600" }], "headline-lg": ["22px", { lineHeight: "30px", letterSpacing: "-0.01em", fontWeight: "700" }], "label-btn": ["15px", { lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "600" }], "body-lg": ["15px", { lineHeight: "22px", fontWeight: "500" }], "display-hero": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "700" }], "body-sm": ["12px", { lineHeight: "18px", fontWeight: "400" }], "headline-md": ["18px", { lineHeight: "26px", letterSpacing: "-0.005em", fontWeight: "600" }], "title-currency-lg": ["28px", { lineHeight: "36px", letterSpacing: "-0.02em", fontWeight: "700" }], "caption": ["11px", { lineHeight: "16px", fontWeight: "500" }], "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }], "title-currency-md": ["20px", { lineHeight: "28px", fontWeight: "700" }], "display-hero-mobile": ["26px", { lineHeight: "34px", letterSpacing: "-0.015em", fontWeight: "700" }] } } } };</script><style>@layer base{html,body{width:100%;margin:0;padding:0;min-height:100%;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-background font-body-md text-body-md text-on-surface antialiased flex flex-col min-h-full"><header class="fixed top-0 inset-x-0 z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_4px_20px_rgba(0,105,83,0.06)]"><div class="h-16 px-margin-mobile flex items-center justify-between"><div class="flex items-center gap-space-xs"><div class="w-11 h-11 rounded-xl bg-surface-container flex items-center justify-center text-primary shadow-[0_2px_8px_rgba(0,105,83,0.08)]"><span class="material-symbols-outlined text-[24px]">storefront</span></div><div class="flex flex-col"><div class="flex items-center gap-1.5"><span class="font-headline-sm text-headline-sm text-on-surface leading-tight">Ramesh Kirana</span><span class="inline-flex items-center px-1.5 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-caption text-caption font-semibold leading-none">PRO</span></div><div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-primary-container animate-pulse"></span><span class="font-caption text-caption text-on-surface-variant font-medium">Paytm Soundbox Active</span></div></div></div><div class="flex items-center gap-space-2xs"><button aria-label="Notifications" class="w-11 h-11 rounded-full flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container/60 transition-colors"><span class="material-symbols-outlined text-[22px]">notifications</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center ml-1"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-28 bg-background"><div class="flex flex-col w-full px-margin-mobile gap-space-lg pb-6">
+<!-- Top Scenario Switcher & Title Block -->
+<div class="flex flex-col gap-space-xs pt-1">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-caption text-caption text-secondary font-semibold uppercase tracking-wider">AI Munimji Forecast</span>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">14-Day Cash Plan</h1>
+</div>
+<!-- Scenario Toggle Pill -->
+<div class="flex items-center bg-surface-container-high p-1 rounded-full shadow-inner" id="scenarioSwitch">
+<button class="px-3 py-1 rounded-full font-caption text-caption font-bold bg-primary text-on-primary shadow-sm transition-all duration-200" id="btnExpected">
+          Expected
+        </button>
+<button class="px-3 py-1 rounded-full font-caption text-caption font-semibold text-on-surface-variant transition-all duration-200 hover:text-on-surface" id="btnConservative">
+          Conservative
+        </button>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[15px] text-primary">auto_graph</span>
+      Daily reconciliation sync with Paytm Soundbox &amp; Khata ledger
+    </p>
+</div>
+<!-- 1. Hero Summary Card: Projected Shortage Alert -->
+<div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#003F35] via-[#004e42] to-[#122824] text-on-primary p-5 shadow-[0_12px_32px_rgba(0,63,53,0.18)]">
+<!-- Ambient glowing shape -->
+<div class="absolute -top-12 -right-12 w-44 h-44 rounded-full bg-amber-500/15 blur-2xl pointer-events-none"></div>
+<div class="absolute -bottom-10 -left-10 w-36 h-36 rounded-full bg-primary-fixed/10 blur-xl pointer-events-none"></div>
+<div class="relative z-10 flex flex-col gap-4">
+<!-- Status Badge & Date Banner -->
+<div class="flex items-center justify-between gap-2">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-400/20 text-amber-200 font-label-badge text-label-badge backdrop-blur-md">
+<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+<span>Urgent Action Recommended</span>
+</div>
+<div class="flex items-center gap-1 text-on-primary/80 font-caption text-caption">
+<span class="material-symbols-outlined text-[14px]">event_busy</span>
+<span>Peak: 15 Apr (Tue)</span>
+</div>
+</div>
+<!-- Main Balance Metrics -->
+<div class="grid grid-cols-2 gap-3 pt-1">
+<div class="flex flex-col bg-white/5 rounded-xl p-3 backdrop-blur-sm">
+<span class="font-caption text-caption text-on-primary/75">Galla Cash (Today)</span>
+<div class="flex items-baseline gap-1 mt-0.5">
+<span class="font-title-currency-md text-title-currency-md text-white">₹12,000</span>
+</div>
+<span class="font-caption text-caption text-primary-fixed flex items-center gap-0.5 mt-1">
+<span class="material-symbols-outlined text-[12px]">check_circle</span> In hand verified
+          </span>
+</div>
+<div class="flex flex-col bg-amber-500/15 rounded-xl p-3 backdrop-blur-sm shadow-[inset_0_1px_0_rgba(251,191,36,0.3)]">
+<span class="font-caption text-caption text-amber-200 font-medium">Projected 3-Day Gap</span>
+<div class="flex items-baseline gap-1 mt-0.5">
+<span class="font-title-currency-md text-title-currency-md text-amber-300">-₹18,000</span>
+</div>
+<span class="font-caption text-caption text-amber-200/80 flex items-center gap-0.5 mt-1">
+<span class="material-symbols-outlined text-[12px]">trending_down</span> Deficit risk
+          </span>
+</div>
+</div>
+<!-- Bottom Micro Tip -->
+<div class="flex items-center gap-2 pt-1 font-body-sm text-body-sm text-on-primary/90">
+<span class="material-symbols-outlined text-amber-300 text-[18px]">lightbulb</span>
+<span>Deepak Wholesaler bill &amp; dukaan rent falling on the same day.</span>
+</div>
+</div>
+</div>
+<!-- 2. Visual 14-Day Timeline Curve -->
+<div class="flex flex-col gap-space-sm bg-surface-container-lowest rounded-2xl p-4 shadow-[0_4px_16px_rgba(0,63,53,0.04)]">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">timeline</span>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-surface">14-Day Trajectory</span>
+</div>
+<span class="font-caption text-caption text-on-surface-variant font-medium">Safe Floor: ₹5,000</span>
+</div>
+<!-- Inline Cash Curve SVG Chart -->
+<div class="relative w-full h-32 pt-2">
+<svg class="w-full h-full overflow-visible" viewbox="0 0 340 100">
+<defs>
+<lineargradient id="areaGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#00856a" stop-opacity="0.25"></stop>
+<stop offset="65%" stop-color="#00856a" stop-opacity="0"></stop>
+</lineargradient>
+<lineargradient id="dangerGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#f59e0b" stop-opacity="0"></stop>
+<stop offset="100%" stop-color="#f59e0b" stop-opacity="0.3"></stop>
+</lineargradient>
+</defs>
+<!-- Zero / Safe threshold Line -->
+<line stroke="#bdc9c3" stroke-dasharray="3 3" stroke-width="1" x1="10" x2="330" y1="62" y2="62"></line>
+<text fill="#6e7a74" font-family="Plus Jakarta Sans" font-size="8" x="332" y="65">₹0</text>
+<!-- Area under trajectory -->
+<polygon fill="url(#areaGradient)" points="15,45 60,35 105,42 165,88 220,92 280,50 330,38 330,62 15,62"></polygon>
+<!-- Shortage shaded dip below zero -->
+<polygon fill="url(#dangerGradient)" points="105,62 165,88 220,92 250,62"></polygon>
+<!-- Solid Line for Past & Observed Cash (Days 1 - 3) -->
+<path d="M 15 45 L 60 35 L 105 42" fill="none" stroke="#00856a" stroke-linecap="round" stroke-width="2.5"></path>
+<!-- Dashed Line for Projected Shortage Dip (Days 4 - 8) -->
+<path d="M 105 42 Q 135 60 165 88 T 220 92" fill="none" stroke="#d97706" stroke-dasharray="4 3" stroke-linecap="round" stroke-width="2.5"></path>
+<!-- Recovery Projected Line (Days 9 - 14) -->
+<path d="M 220 92 Q 250 85 280 50 L 330 38" fill="none" stroke="#00856a" stroke-dasharray="3 3" stroke-linecap="round" stroke-width="2"></path>
+<!-- Nodes with Badges -->
+<!-- Today Node -->
+<circle cx="105" cy="42" fill="#006953" r="4.5" stroke="#ffffff" stroke-width="2"></circle>
+<!-- Critical Dip Node (15 Apr) -->
+<circle class="animate-pulse" cx="165" cy="88" fill="#ba1a1a" r="5" stroke="#ffffff" stroke-width="2"></circle>
+<!-- Recovery Node -->
+<circle cx="280" cy="50" fill="#00856a" r="4" stroke="#ffffff" stroke-width="1.5"></circle>
+</svg>
+</div>
+<!-- Day-by-Day Highlight Badges -->
+<div class="grid grid-cols-4 gap-1.5 pt-1 text-center">
+<div class="bg-surface-container rounded-lg py-1.5 px-1 flex flex-col items-center">
+<span class="font-caption text-caption text-on-surface-variant">Today</span>
+<span class="font-caption text-caption font-bold text-primary">+₹12k</span>
+</div>
+<div class="bg-surface-container rounded-lg py-1.5 px-1 flex flex-col items-center">
+<span class="font-caption text-caption text-on-surface-variant">14 Apr</span>
+<span class="font-caption text-caption font-bold text-on-surface">+₹4k</span>
+</div>
+<div class="bg-amber-100 rounded-lg py-1.5 px-1 flex flex-col items-center shadow-sm">
+<span class="font-caption text-caption text-amber-900 font-bold">15 Apr ⚠️</span>
+<span class="font-caption text-caption font-extrabold text-amber-800">-₹18k</span>
+</div>
+<div class="bg-surface-container rounded-lg py-1.5 px-1 flex flex-col items-center">
+<span class="font-caption text-caption text-on-surface-variant">20 Apr</span>
+<span class="font-caption text-caption font-bold text-primary">+₹16k</span>
+</div>
+</div>
+</div>
+<!-- 3. Cash Inflow vs Outflow Equation Breakdown -->
+<div class="flex flex-col gap-space-sm bg-surface-container-lowest rounded-2xl p-4 shadow-[0_4px_16px_rgba(0,63,53,0.04)]">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">calculate</span>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-surface">Equation Breakdown</span>
+</div>
+<span class="inline-flex items-center gap-1 font-caption text-caption text-secondary font-semibold bg-secondary-fixed/50 px-2 py-0.5 rounded-full">
+        Next 3 Days
+      </span>
+</div>
+<!-- Equation Items List -->
+<div class="flex flex-col gap-2 pt-1">
+<!-- Opening Cash -->
+<div class="flex items-center justify-between p-2.5 rounded-xl bg-surface-container-low">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined text-[18px]">savings</span>
+</div>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-semibold text-on-surface">Opening Galla Cash</span>
+<span class="font-caption text-caption text-on-surface-variant">Verified in cash register</span>
+</div>
+</div>
+<span class="font-headline-sm text-headline-sm font-bold text-primary">+ ₹12,000</span>
+</div>
+<!-- Expected Customer Collections -->
+<div class="flex items-center justify-between p-2.5 rounded-xl bg-surface-container-low">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined text-[18px]">qr_code_scanner</span>
+</div>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-semibold text-on-surface">Expected Daily UPI &amp; Sales</span>
+<span class="font-caption text-caption text-on-surface-variant">Avg ₹2.7k/day based on past 30 days</span>
+</div>
+</div>
+<span class="font-headline-sm text-headline-sm font-bold text-primary">+ ₹8,000</span>
+</div>
+<!-- Outflow: Supplier -->
+<div class="flex items-center justify-between p-2.5 rounded-xl bg-surface-container-high/60">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-full bg-error-container flex items-center justify-center text-on-error-container">
+<span class="material-symbols-outlined text-[18px]">local_shipping</span>
+</div>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-semibold text-on-surface">Deepak Wholesalers Bill</span>
+<span class="font-caption text-caption text-on-surface-variant">Grains &amp; FMCG delivery invoice</span>
+</div>
+</div>
+<span class="font-headline-sm text-headline-sm font-bold text-error">- ₹26,000</span>
+</div>
+<!-- Outflow: Shop Rent -->
+<div class="flex items-center justify-between p-2.5 rounded-xl bg-surface-container-high/60">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-full bg-error-container flex items-center justify-center text-on-error-container">
+<span class="material-symbols-outlined text-[18px]">home_work</span>
+</div>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-semibold text-on-surface">Dukaan Kiraya (Shop Rent)</span>
+<span class="font-caption text-caption text-on-surface-variant">Monthly due date 15th April</span>
+</div>
+</div>
+<span class="font-headline-sm text-headline-sm font-bold text-error">- ₹12,000</span>
+</div>
+<!-- Net Projection Result Summary -->
+<div class="mt-1 p-3 rounded-xl bg-amber-50 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-amber-700 text-[20px]">warning_amber</span>
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm font-bold text-amber-900">Projected Net Gap (15 Apr)</span>
+<span class="font-caption text-caption text-amber-700">Forecasted deficit (not realized loss yet)</span>
+</div>
+</div>
+<span class="font-headline-md text-headline-md font-extrabold text-amber-900">- ₹18,000</span>
+</div>
+</div>
+</div>
+<!-- 4. AI Munim Suggested Action Plan Cards -->
+<div class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[20px] text-primary">psychology</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">AI Munimji Solution</h2>
+</div>
+<span class="font-caption text-caption text-primary font-bold">2 actions solve 100% gap</span>
+</div>
+<!-- Solution Card 1: Udhaar Vasooli -->
+<div class="bg-surface-container-lowest rounded-2xl p-4 shadow-[0_4px_16px_rgba(0,63,53,0.04)] flex flex-col gap-3">
+<div class="flex items-start justify-between gap-3">
+<div class="w-10 h-10 rounded-xl bg-secondary-fixed flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[22px]">send_to_mobile</span>
+</div>
+<div class="flex-1 flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="font-headline-sm text-headline-sm text-on-surface">Fast-Track Udhaar Vasooli</span>
+<span class="px-1.5 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-caption text-caption font-bold">Priority 1</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+            WhatsApp reminder to 4 trusted customers (Sharma Ji, Verma, Rajesh) for overdue balance.
+          </p>
+</div>
+</div>
+<!-- Impact Bar & Action -->
+<div class="flex items-center justify-between bg-surface-container-low rounded-xl px-3 py-2">
+<div class="flex items-center gap-1.5 font-caption text-caption text-primary font-bold">
+<span class="material-symbols-outlined text-[16px]">add_task</span>
+<span>Recover: +₹10,000</span>
+</div>
+<span class="font-caption text-caption text-on-surface-variant">Gap drops to -₹8,000</span>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 h-10 rounded-full bg-secondary-container hover:bg-secondary-fixed text-on-secondary-container font-label-btn text-label-btn font-semibold flex items-center justify-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[18px]">chat</span>
+          WhatsApp Reminders Bhejein
+        </button>
+</div>
+</div>
+<!-- Solution Card 2: Supplier Restructure -->
+<div class="bg-surface-container-lowest rounded-2xl p-4 shadow-[0_4px_16px_rgba(0,63,53,0.04)] flex flex-col gap-3">
+<div class="flex items-start justify-between gap-3">
+<div class="w-10 h-10 rounded-xl bg-primary-container/10 flex items-center justify-center text-primary-container shrink-0">
+<span class="material-symbols-outlined text-[22px]">handshake</span>
+</div>
+<div class="flex-1 flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="font-headline-sm text-headline-sm text-on-surface">50% Supplier Split Pay</span>
+<span class="px-1.5 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-caption text-caption font-semibold">Priority 2</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+            Pay Deepak Wholesaler ₹13,000 on 15 Apr, balance ₹13,000 deferred to 20 Apr stock arrival.
+          </p>
+</div>
+</div>
+<!-- Impact Bar & Action -->
+<div class="flex items-center justify-between bg-surface-container-low rounded-xl px-3 py-2">
+<div class="flex items-center gap-1.5 font-caption text-caption text-primary font-bold">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span>Relief: +₹13,000 deferral</span>
+</div>
+<span class="font-caption text-caption text-primary font-bold">Surplus achieved: +₹5,000</span>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 h-10 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface font-label-btn text-label-btn font-semibold flex items-center justify-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[18px]">call</span>
+          Deepak Wholesaler Call Request
+        </button>
+</div>
+</div>
+</div>
+<!-- 5. Sticky Action Plan Approver Card -->
+<div class="sticky bottom-20 z-30 pt-2 pb-1">
+<div class="rounded-2xl p-4 bg-gradient-to-r from-primary to-primary-container text-on-primary shadow-[0_10px_28px_rgba(0,105,83,0.35)] flex items-center justify-between gap-3">
+<div class="flex flex-col min-w-0">
+<span class="font-caption text-caption text-primary-fixed uppercase tracking-wider font-bold">One-Tap Execution</span>
+<span class="font-body-lg text-body-lg font-bold text-white truncate">Approve Both AI Actions</span>
+<span class="font-caption text-caption text-on-primary/80">Resolves ₹18,000 shortage instantly</span>
+</div>
+<button class="h-11 px-5 rounded-full bg-surface-container-lowest text-primary font-label-btn text-label-btn font-bold flex items-center gap-1.5 shrink-0 shadow-md hover:bg-surface transition-transform active:scale-95" id="approvePlanBtn">
+<span>Approve Plan</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Reassurance Footer Tag -->
+<div class="flex items-center justify-center gap-2 text-center text-on-surface-variant font-caption text-caption pb-2">
+<span class="material-symbols-outlined text-[15px] text-secondary">verified_user</span>
+<span>Munim AI monitors cash safety every evening 9:00 PM after shop closing</span>
+</div>
+</div>
+<script>
+  // Simple micro-interactions for Scenario toggle and Plan Approval
+  const btnExp = document.getElementById('btnExpected');
+  const btnCons = document.getElementById('btnConservative');
+  const approveBtn = document.getElementById('approvePlanBtn');
+
+  if (btnExp && btnCons) {
+    btnExp.addEventListener('click', () => {
+      btnExp.className = "px-3 py-1 rounded-full font-caption text-caption font-bold bg-primary text-on-primary shadow-sm transition-all duration-200";
+      btnCons.className = "px-3 py-1 rounded-full font-caption text-caption font-semibold text-on-surface-variant transition-all duration-200 hover:text-on-surface";
+    });
+
+    btnCons.addEventListener('click', () => {
+      btnCons.className = "px-3 py-1 rounded-full font-caption text-caption font-bold bg-primary text-on-primary shadow-sm transition-all duration-200";
+      btnExp.className = "px-3 py-1 rounded-full font-caption text-caption font-semibold text-on-surface-variant transition-all duration-200 hover:text-on-surface";
+    });
+  }
+
+  if (approveBtn) {
+    approveBtn.addEventListener('click', () => {
+      approveBtn.innerHTML = `<span class="material-symbols-outlined text-[18px] animate-spin">sync</span><span>Approved!</span>`;
+      approveBtn.classList.add('bg-secondary-fixed', 'text-on-secondary-fixed');
+      setTimeout(() => {
+        approveBtn.innerHTML = `<span class="material-symbols-outlined text-[18px]">done_all</span><span>Queued</span>`;
+      }, 1200);
+    });
+  }
+</script></main><div class="fixed bottom-0 inset-x-0 z-50 pointer-events-none pb-safe"><div class="px-margin-mobile pb-3 pt-1 flex justify-center"><nav class="pointer-events-auto w-full max-w-[420px] h-[68px] rounded-full bg-surface-container-lowest/90 backdrop-blur-2xl shadow-[0_12px_36px_rgba(0,105,83,0.18)] px-3 flex items-center justify-between relative" data-active-classes="text-primary font-bold"><div class="flex items-center justify-around flex-1 pr-7"><a class="flex flex-col items-center justify-center gap-0.5 min-w-[52px] h-12 text-on-surface-variant transition-colors" data-path="home" href="#"><span class="material-symbols-outlined text-[22px]">dashboard</span><span class="font-caption text-caption">Home</span></a><a class="flex flex-col items-center justify-center gap-0.5 min-w-[52px] h-12 text-on-surface-variant transition-colors" data-path="khata-ledger" href="#"><span class="material-symbols-outlined text-[22px]">menu_book</span><span class="font-caption text-caption">Khata</span></a></div><div class="absolute left-1/2 -top-5 -translate-x-1/2 flex flex-col items-center pointer-events-auto"><button aria-label="Munim se bolo voice entry" class="w-[58px] h-[58px] rounded-full bg-gradient-to-tr from-primary to-primary-container text-on-primary flex items-center justify-center shadow-[0_10px_24px_rgba(0,133,106,0.45)] hover:scale-105 active:scale-95 transition-transform ring-4 ring-surface-container-lowest"><span class="material-symbols-outlined text-[28px] animate-pulse">mic</span></button><span class="font-caption text-caption font-bold text-primary mt-1 drop-shadow-sm">Bolo</span></div><div class="flex items-center justify-around flex-1 pl-7"><a aria-current="page" class="flex flex-col items-center justify-center gap-0.5 min-w-[52px] h-12 transition-colors text-primary font-bold" data-path="cash-plan" href="#"><span class="material-symbols-outlined text-[22px]">trending_up</span><span class="font-caption text-caption">Plan</span></a><a class="flex flex-col items-center justify-center gap-0.5 min-w-[52px] h-12 text-on-surface-variant transition-colors" data-path="shop-profile" href="#"><span class="material-symbols-outlined text-[22px]">store</span><span class="font-caption text-caption">Profile</span></a></div></nav></div></div></body></html>

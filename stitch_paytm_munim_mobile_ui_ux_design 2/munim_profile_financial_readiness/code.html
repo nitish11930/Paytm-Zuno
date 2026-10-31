@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface-container-lowest": "#ffffff", "surface-dim": "#cbdeda", "surface-tint": "#006b55", "tertiary-fixed-dim": "#51dea3", "error-container": "#ffdad6", "secondary-fixed-dim": "#9bd1c3", "on-primary-container": "#fafffb", "primary-container": "#00856a", "on-surface-variant": "#3e4944", "on-tertiary-container": "#fafff9", "tertiary-container": "#00865b", "on-secondary-container": "#396d62", "on-error-container": "#93000a", "secondary-fixed": "#b7eedf", "on-error": "#ffffff", "inverse-surface": "#233431", "primary": "#006953", "outline": "#6e7a74", "on-primary": "#ffffff", "on-secondary-fixed-variant": "#184f45", "on-secondary": "#ffffff", "tertiary": "#006a47", "on-surface": "#0d1e1d", "outline-variant": "#bdc9c3", "on-tertiary-fixed": "#002113", "surface-container-highest": "#d3e7e3", "surface": "#eafefa", "secondary": "#33675c", "surface-container-low": "#e4f8f4", "secondary-container": "#b7eedf", "on-tertiary-fixed-variant": "#005236", "surface-container": "#def2ee", "inverse-on-surface": "#e1f5f1", "surface-container-high": "#d9ece9", "on-tertiary": "#ffffff", "on-secondary-fixed": "#00201a", "surface-bright": "#eafefa", "error": "#ba1a1a", "on-primary-fixed": "#002118", "background": "#eafefa", "surface-variant": "#d3e7e3", "inverse-primary": "#73d9b9", "on-primary-fixed-variant": "#00513f", "primary-fixed": "#8ff6d5", "primary-fixed-dim": "#73d9b9", "tertiary-fixed": "#71fbbd", "on-background": "#0d1e1d" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-sm": "0.75rem", "space-xs": "0.5rem", "gutter-mobile": "0.75rem", "gutter": "1rem", "margin": "1.25rem", "space-xl": "2rem", "margin-mobile": "1rem", "space-2xs": "0.25rem", "space-md": "1rem", "space-2xl": "2.5rem", "space-lg": "1.5rem" }, "fontFamily": { "caption": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "display-hero": ["Plus Jakarta Sans"], "title-currency-lg": ["Plus Jakarta Sans"], "label-btn": ["Plus Jakarta Sans"], "title-currency-md": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "label-badge": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], "display-hero-mobile": ["Plus Jakarta Sans"], "body-sm": ["Plus Jakarta Sans"] }, "fontSize": { "caption": ["11px", { "lineHeight": "16px", "fontWeight": "500" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "display-hero": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "title-currency-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "label-btn": ["15px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }], "title-currency-md": ["20px", { "lineHeight": "28px", "fontWeight": "700" }], "headline-sm": ["16px", { "lineHeight": "24px", "fontWeight": "600" }], "headline-md": ["18px", { "lineHeight": "26px", "letterSpacing": "-0.005em", "fontWeight": "600" }], "label-badge": ["11px", { "lineHeight": "14px", "letterSpacing": "0.02em", "fontWeight": "700" }], "body-lg": ["15px", { "lineHeight": "22px", "fontWeight": "500" }], "headline-lg": ["22px", { "lineHeight": "30px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "display-hero-mobile": ["26px", { "lineHeight": "34px", "letterSpacing": "-0.015em", "fontWeight": "700" }], "body-sm": ["12px", { "lineHeight": "18px", "fontWeight": "400" }] } } } };</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-on-surface antialiased"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,46,40,0.04)]"><div class="h-16 px-margin-mobile flex items-center justify-between"><div class="flex items-center gap-space-sm"><div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center"><span class="material-symbols-outlined text-primary text-[22px]">account_balance_wallet</span></div><h1 class="font-headline-md text-headline-md text-on-surface tracking-tight font-bold">Profile</h1></div><div class="flex items-center gap-space-xs"><button class="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/40 transition-colors"><span class="material-symbols-outlined text-[24px]">volume_up</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 pb-24 bg-surface min-h-screen"><div class="flex flex-col w-full">
+<div class="px-margin-mobile pt-space-xs pb-space-lg flex flex-col gap-space-lg">
+<div class="flex items-center justify-between bg-surface-container-low px-space-md py-space-xs rounded-xl shadow-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]" style="font-variation-settings: 'FILL' 1;">store</span>
+<span class="font-caption text-caption text-on-surface-variant font-semibold tracking-wide">DUKAAN ID: #MK-9821</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<span class="inline-flex items-center px-space-xs py-[2px] rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-label-badge text-label-badge font-bold">
+          DEMO ACTIVE
+        </span>
+<button aria-label="Notifications" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[18px]">notifications</span>
+</button>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-2xl p-space-md shadow-sm relative overflow-hidden">
+<div class="absolute -right-8 -top-8 w-28 h-28 bg-primary/5 rounded-full pointer-events-none"></div>
+<div class="flex items-start gap-space-md relative">
+<div class="relative shrink-0">
+<div class="w-16 h-16 rounded-2xl bg-secondary-container text-on-secondary-container flex items-center justify-center overflow-hidden shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Warm portrait of Indian retail merchant Rameshji wearing traditional kurta smiling proudly in front of his organized kirana grocery store shelves, natural afternoon lighting, authentic documentary style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDXMpw4xEkAUp0I9ZTq6-xrGMF09QWR_XZog4Y5K-9xdf8BFafIiDg1m67AcRHONmHYnH56aJMudNNPHn4rMOBp_rgErSvfFScoluKANR9PiOm0_EdSrVzewv0S-YMY97j0rpdPoGAx3S3ApfgJrfZgnUicJPR1sK5FKYptnMsl2IGEg7ZfV7iZdNlR2dlAahQSTBgFMHLXPM_tpE0AmjWG7bXyc070rWC4rwaayl7p"/>
+</div>
+<div class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center shadow">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<div class="flex flex-col min-w-0 flex-1">
+<div class="flex items-center gap-space-2xs flex-wrap">
+<h2 class="font-headline-md text-headline-md text-on-surface font-bold truncate">Ramesh Kirana &amp; General Store</h2>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Proprietor: Ramesh Chandra Gupta</p>
+<div class="flex items-center gap-space-xs mt-space-xs flex-wrap">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-caption text-caption">
+<span class="material-symbols-outlined text-primary text-[14px]">domain_verification</span>
+              GSTIN: 07AAECR1029K1ZV
+            </span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-caption text-caption font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+              Verified Merchant
+            </span>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-2xl p-space-md shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">insights</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Munim Business Readiness Index</h3>
+<p class="font-caption text-caption text-on-surface-variant">Checklist Item 19 • Bahi-Khata Quality</p>
+</div>
+</div>
+<span class="font-headline-sm text-headline-sm text-primary font-bold">78%</span>
+</div>
+<div class="bg-surface-container-low rounded-xl p-space-md flex flex-col gap-space-xs">
+<div class="flex justify-between items-center text-on-surface">
+<span class="font-body-md text-body-md font-semibold text-primary">78% Complete</span>
+<span class="font-caption text-caption text-on-surface-variant">Ready for Smart Insights</span>
+</div>
+<div class="w-full bg-surface-container h-2.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full transition-all duration-500" style="width: 78%;"></div>
+</div>
+<div class="flex justify-between items-center text-on-surface-variant pt-1">
+<span class="font-caption text-caption">0% Basic Entry</span>
+<span class="font-caption text-caption">Target: 90%+ for Credit Assist</span>
+</div>
+</div>
+<div class="flex flex-col gap-space-sm">
+<span class="font-caption text-caption text-on-surface-variant uppercase tracking-wider font-semibold">Audit Breakdown &amp; Missing Items</span>
+<div class="flex items-start gap-space-sm p-space-xs rounded-xl bg-surface-container-lowest">
+<div class="w-6 h-6 rounded-full bg-secondary-fixed text-primary flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[16px] font-bold">check</span>
+</div>
+<div class="flex-1 min-w-0">
+<p class="font-body-md text-body-md text-on-surface font-medium">Daily Cash Galla Reconciled</p>
+<p class="font-caption text-caption text-on-surface-variant">Continuous cash counter audits synchronized</p>
+</div>
+<span class="font-caption text-caption text-primary font-bold shrink-0">+25% Added</span>
+</div>
+<div class="flex items-start gap-space-sm p-space-xs rounded-xl bg-surface-container-lowest">
+<div class="w-6 h-6 rounded-full bg-secondary-fixed text-primary flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[16px] font-bold">check</span>
+</div>
+<div class="flex-1 min-w-0">
+<p class="font-body-md text-body-md text-on-surface font-medium">Soundbox UPI Auto-Sync Connected</p>
+<p class="font-caption text-caption text-on-surface-variant">Live audio telemetry receiving UPI ledger hits</p>
+</div>
+<span class="font-caption text-caption text-primary font-bold shrink-0">+30% Added</span>
+</div>
+<div class="flex items-start justify-between gap-space-sm p-space-sm rounded-xl bg-surface-container-low">
+<div class="flex items-start gap-space-sm min-w-0">
+<div class="w-6 h-6 rounded-full bg-primary-fixed text-on-primary-fixed-variant flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[16px]">priority_high</span>
+</div>
+<div class="flex flex-col min-w-0">
+<p class="font-body-md text-body-md text-on-surface font-medium">Missing: Supplier Invoices (Next 14 Days)</p>
+<p class="font-caption text-caption text-on-surface-variant">Adds +15% pending index accuracy</p>
+</div>
+</div>
+<button class="shrink-0 px-space-sm py-1.5 rounded-full bg-primary text-on-primary font-label-badge text-label-badge font-semibold shadow hover:bg-primary-container transition-all">
+            Upload Invoices
+          </button>
+</div>
+<div class="flex items-start justify-between gap-space-sm p-space-sm rounded-xl bg-surface-container-low">
+<div class="flex items-start gap-space-sm min-w-0">
+<div class="w-6 h-6 rounded-full bg-primary-fixed text-on-primary-fixed-variant flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[16px]">priority_high</span>
+</div>
+<div class="flex flex-col min-w-0">
+<p class="font-body-md text-body-md text-on-surface font-medium">Missing: Monthly Shop Rent Agreement</p>
+<p class="font-caption text-caption text-on-surface-variant">Adds +10% pending verification</p>
+</div>
+</div>
+<button class="shrink-0 px-space-sm py-1.5 rounded-full bg-primary text-on-primary font-label-badge text-label-badge font-semibold shadow hover:bg-primary-container transition-all">
+            Add Rent Details
+          </button>
+</div>
+</div>
+<div class="rounded-xl p-space-sm bg-surface-container flex items-start gap-space-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">info</span>
+<p class="font-caption text-caption">
+<strong>Product Logic Note:</strong> Yeh score koi credit guarantee nahi hai. Yeh aapke bahi-khata record ki completeness darshata hai taaki AI Munim bina bhedbhaav ke satik salaah de sake.
+        </p>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-2xl p-space-md shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center gap-space-xs">
+<div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">speaker</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Dukaan &amp; Hardware Settings</h3>
+<p class="font-caption text-caption text-on-surface-variant">Checklist Item 20 • POS &amp; Peripherals</p>
+</div>
+</div>
+<div class="bg-surface-container-low rounded-xl p-space-md flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[22px]">volume_up</span>
+<div>
+<p class="font-body-md text-body-md text-on-surface font-semibold">Soundbox Pro (v4.2)</p>
+<p class="font-caption text-caption text-on-surface-variant">Device S/N: SB-DL-9821</p>
+</div>
+</div>
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-label-badge text-label-badge font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+            ACTIVE
+          </span>
+</div>
+<div class="grid grid-cols-3 gap-space-xs pt-space-xs">
+<div class="bg-surface-container-lowest p-space-xs rounded-lg flex flex-col items-center justify-center text-center">
+<div class="flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-[16px]">battery_charging_full</span>
+<span class="font-body-md text-body-md font-bold">92%</span>
+</div>
+<span class="font-caption text-caption text-on-surface-variant">Battery Level</span>
+</div>
+<div class="bg-surface-container-lowest p-space-xs rounded-lg flex flex-col items-center justify-center text-center">
+<div class="flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-[16px]">volume_up</span>
+<span class="font-body-md text-body-md font-bold">80%</span>
+</div>
+<span class="font-caption text-caption text-on-surface-variant">Volume</span>
+</div>
+<div class="bg-surface-container-lowest p-space-xs rounded-lg flex flex-col items-center justify-center text-center">
+<div class="flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-[16px]">translate</span>
+<span class="font-body-md text-body-md font-bold">Hindi</span>
+</div>
+<span class="font-caption text-caption text-on-surface-variant">Audio Bhasha</span>
+</div>
+</div>
+<button class="w-full mt-1 py-2 px-space-sm rounded-full bg-surface-container text-on-surface font-label-btn text-label-btn flex items-center justify-center gap-space-xs hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[18px]">play_circle</span>
+          Test Soundbox Voice Alert
+        </button>
+</div>
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between p-space-sm rounded-xl bg-surface-container-low">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-xl bg-surface-container-lowest text-primary flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[22px]">account_balance</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<p class="font-body-md text-body-md text-on-surface font-semibold">HDFC Bank Current A/c</p>
+<span class="px-1.5 py-0.5 rounded bg-secondary-fixed text-on-secondary-fixed-variant font-caption text-[10px] font-bold">PRIMARY</span>
+</div>
+<p class="font-caption text-caption text-on-surface-variant">A/c •••• 8814 • IFSC: HDFC0000287</p>
+</div>
+</div>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</div>
+<div class="flex items-center justify-between p-space-sm rounded-xl bg-surface-container-low">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-xl bg-surface-container-lowest text-primary flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[22px]">schedule</span>
+</div>
+<div class="flex flex-col">
+<p class="font-body-md text-body-md text-on-surface font-semibold">Daily Auto-Settlement</p>
+<p class="font-caption text-caption text-on-surface-variant">Scheduled for 11:00 PM tonight</p>
+</div>
+</div>
+<span class="font-label-badge text-label-badge text-primary font-bold px-2.5 py-1 bg-surface-container-lowest rounded-full shadow-sm">ENABLED</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-2xl p-space-md shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center gap-space-xs">
+<div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">tune</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">App Preferences &amp; Controls</h3>
+<p class="font-caption text-caption text-on-surface-variant">Language, Voice AI &amp; Cloud Safety</p>
+</div>
+</div>
+<div class="flex flex-col gap-space-xs">
+<span class="font-caption text-caption text-on-surface-variant uppercase tracking-wider font-semibold">Bhasha / Application Language</span>
+<div class="grid grid-cols-3 gap-space-xs pt-1" id="languageSelector">
+<button class="flex flex-col items-center justify-center py-space-sm px-2 rounded-xl bg-primary text-on-primary transition-colors shadow-sm" data-lang="hi">
+<span class="font-body-lg text-body-lg font-bold">हिंदी</span>
+<span class="font-caption text-caption opacity-90">Hindi</span>
+</button>
+<button class="flex flex-col items-center justify-center py-space-sm px-2 rounded-xl bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors" data-lang="en">
+<span class="font-body-lg text-body-lg font-bold">English</span>
+<span class="font-caption text-caption text-on-surface-variant">English</span>
+</button>
+<button class="flex flex-col items-center justify-center py-space-sm px-2 rounded-xl bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors" data-lang="hinglish">
+<span class="font-body-lg text-body-lg font-bold">Hinglish</span>
+<span class="font-caption text-caption text-on-surface-variant">Mix</span>
+</button>
+</div>
+</div>
+<div class="flex flex-col gap-space-xs">
+<span class="font-caption text-caption text-on-surface-variant uppercase tracking-wider font-semibold">Active Permissions</span>
+<div class="divide-y divide-transparent flex flex-col gap-1.5">
+<div class="flex items-center justify-between p-space-xs rounded-xl bg-surface-container-low">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">mic</span>
+<span class="font-body-md text-body-md text-on-surface font-medium">Microphone (Audio Munim)</span>
+</div>
+<span class="font-caption text-caption text-primary font-bold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+              Allowed
+            </span>
+</div>
+<div class="flex items-center justify-between p-space-xs rounded-xl bg-surface-container-low">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">sms</span>
+<span class="font-body-md text-body-md text-on-surface font-medium">Bank SMS Auto-read</span>
+</div>
+<span class="font-caption text-caption text-primary font-bold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+              Allowed
+            </span>
+</div>
+<div class="flex items-center justify-between p-space-xs rounded-xl bg-surface-container-low">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">notifications_active</span>
+<span class="font-body-md text-body-md text-on-surface font-medium">Payment Sound &amp; Push Alerts</span>
+</div>
+<span class="font-caption text-caption text-primary font-bold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+              Active
+            </span>
+</div>
+</div>
+</div>
+<div class="p-space-sm rounded-xl bg-surface-container flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<div class="w-8 h-8 rounded-full bg-secondary-fixed text-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[18px]">cloud_done</span>
+</div>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-on-surface font-semibold">100% Encrypted Cloud Backup</span>
+<span class="font-caption text-caption text-on-surface-variant">Last synced 2 mins ago via Paytm Cloud</span>
+</div>
+</div>
+<button class="px-space-xs py-1 rounded bg-surface-container-lowest text-primary text-caption font-bold hover:bg-surface-container-high transition-colors shadow-sm">
+          Sync Now
+        </button>
+</div>
+<div class="pt-space-xs flex flex-col gap-space-xs">
+<button class="w-full py-3 px-space-md rounded-full bg-surface-container text-on-surface font-label-btn text-label-btn flex items-center justify-center gap-space-xs hover:bg-surface-container-high transition-colors" id="resetDemoBtn">
+<span class="material-symbols-outlined text-[18px]">restart_alt</span>
+          Reset Demo Data (Synthetic Sandbox)
+        </button>
+<p class="font-caption text-caption text-center text-on-surface-variant">
+          Munim AI v2.4.0 • Compliant with RBI Retail Merchant Guidelines
+        </p>
+</div>
+</div>
+</div>
+</div>
+<script>
+  (function() {
+    const langButtons = document.querySelectorAll('#languageSelector button');
+    langButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        langButtons.forEach(b => {
+          b.className = 'flex flex-col items-center justify-center py-space-sm px-2 rounded-xl bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors';
+          const subtext = b.querySelector('span:last-child');
+          if (subtext) subtext.className = 'font-caption text-caption text-on-surface-variant';
+        });
+        btn.className = 'flex flex-col items-center justify-center py-space-sm px-2 rounded-xl bg-primary text-on-primary transition-colors shadow-sm';
+        const activeSubtext = btn.querySelector('span:last-child');
+        if (activeSubtext) activeSubtext.className = 'font-caption text-caption opacity-90';
+      });
+    });
+
+    const resetBtn = document.getElementById('resetDemoBtn');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        const originalText = resetBtn.innerHTML;
+        resetBtn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">refresh</span> Resetting Sandbox Ledger...';
+        resetBtn.disabled = true;
+        setTimeout(() => {
+          resetBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">check</span> Demo Data Reset Completed!';
+          resetBtn.className = 'w-full py-3 px-space-md rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-label-btn text-label-btn flex items-center justify-center gap-space-xs transition-colors';
+          setTimeout(() => {
+            resetBtn.innerHTML = originalText;
+            resetBtn.className = 'w-full py-3 px-space-md rounded-full bg-surface-container text-on-surface font-label-btn text-label-btn flex items-center justify-center gap-space-xs hover:bg-surface-container-high transition-colors';
+            resetBtn.disabled = false;
+          }, 2000);
+        }, 1200);
+      });
+    }
+
+    const navLinks = document.querySelectorAll('nav a[data-path]');
+    navLinks.forEach(link => {
+      if (link.getAttribute('data-path') === 'profile') {
+        link.classList.remove('text-on-surface-variant');
+        link.classList.add('text-primary', 'font-semibold');
+      } else {
+        link.classList.remove('text-primary', 'font-semibold');
+        link.classList.add('text-on-surface-variant');
+      }
+    });
+  })();
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-4px_20px_rgba(0,46,40,0.05)]" data-active-classes="text-primary font-semibold"><div class="flex justify-around items-center h-16 px-space-xs"><a class="flex flex-col items-center justify-center gap-space-2xs min-w-[44px] min-h-[44px] px-space-xs text-on-surface-variant hover:text-primary transition-colors" data-path="home" href="#"><span class="material-symbols-outlined text-[24px]">dashboard</span><span class="font-caption text-caption">Home</span></a><a class="flex flex-col items-center justify-center gap-space-2xs min-w-[44px] min-h-[44px] px-space-xs text-on-surface-variant hover:text-primary transition-colors" data-path="khata" href="#"><span class="material-symbols-outlined text-[24px]">menu_book</span><span class="font-caption text-caption">Khata</span></a><a class="flex flex-col items-center justify-center gap-space-2xs min-w-[44px] min-h-[44px] px-space-xs text-on-surface-variant hover:text-primary transition-colors" data-path="plan" href="#"><span class="material-symbols-outlined text-[24px]">insights</span><span class="font-caption text-caption">Plan</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-space-2xs min-w-[44px] min-h-[44px] px-space-xs transition-colors text-primary font-semibold" data-path="profile" href="#"><span class="material-symbols-outlined text-[24px]">storefront</span><span class="font-caption text-caption">Profile</span></a></div></nav></body></html>

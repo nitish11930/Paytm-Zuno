@@ -1,0 +1,21 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+privacy/
+data/
+.DS_Store
+*.log
+coverage/
+android/build/
+
+# Private credentials and generated packages
+*.keystore
+*.jks
+*.pem
+*.key
+*.apk
+*.aab
+*.sqlite*
+*.db

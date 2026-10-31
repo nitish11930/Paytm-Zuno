@@ -1,0 +1,26 @@
+# Proposed persistent test deployment. This file does not deploy or authorize a charge.
+# Confirm the provider's displayed service + disk price before applying.
+services:
+  - type: web
+    name: munim-friend-test
+    runtime: docker
+    plan: starter
+    healthCheckPath: /api/health
+    autoDeployTrigger: off
+    disk:
+      name: munim-test-data
+      mountPath: /app/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: 10000
+      - key: TEST_ACCESS_CODE
+        sync: false
+      - key: SARVAM_API_KEY
+        sync: false
+      - key: SARVAM_DAILY_CALL_LIMIT
+        value: 100

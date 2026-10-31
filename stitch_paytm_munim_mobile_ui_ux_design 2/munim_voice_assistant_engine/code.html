@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface-container-lowest": "#ffffff", "surface-dim": "#cbdeda", "surface-tint": "#006b55", "tertiary-fixed-dim": "#51dea3", "error-container": "#ffdad6", "secondary-fixed-dim": "#9bd1c3", "on-primary-container": "#fafffb", "primary-container": "#00856a", "on-surface-variant": "#3e4944", "on-tertiary-container": "#fafff9", "tertiary-container": "#00865b", "on-secondary-container": "#396d62", "on-error-container": "#93000a", "secondary-fixed": "#b7eedf", "on-error": "#ffffff", "inverse-surface": "#233431", "primary": "#006953", "outline": "#6e7a74", "on-primary": "#ffffff", "on-secondary-fixed-variant": "#184f45", "on-secondary": "#ffffff", "tertiary": "#006a47", "on-surface": "#0d1e1d", "outline-variant": "#bdc9c3", "on-tertiary-fixed": "#002113", "surface-container-highest": "#d3e7e3", "surface": "#eafefa", "secondary": "#33675c", "surface-container-low": "#e4f8f4", "secondary-container": "#b7eedf", "on-tertiary-fixed-variant": "#005236", "surface-container": "#def2ee", "inverse-on-surface": "#e1f5f1", "surface-container-high": "#d9ece9", "on-tertiary": "#ffffff", "on-secondary-fixed": "#00201a", "surface-bright": "#eafefa", "error": "#ba1a1a", "on-primary-fixed": "#002118", "background": "#eafefa", "surface-variant": "#d3e7e3", "inverse-primary": "#73d9b9", "on-primary-fixed-variant": "#00513f", "primary-fixed": "#8ff6d5", "primary-fixed-dim": "#73d9b9", "tertiary-fixed": "#71fbbd", "on-background": "#0d1e1d" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-sm": "0.75rem", "space-xs": "0.5rem", "gutter-mobile": "0.75rem", "gutter": "1rem", "margin": "1.25rem", "space-xl": "2rem", "margin-mobile": "1rem", "space-2xs": "0.25rem", "space-md": "1rem", "space-2xl": "2.5rem", "space-lg": "1.5rem" }, "fontFamily": { "caption": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "display-hero": ["Plus Jakarta Sans"], "title-currency-lg": ["Plus Jakarta Sans"], "label-btn": ["Plus Jakarta Sans"], "title-currency-md": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "label-badge": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], "display-hero-mobile": ["Plus Jakarta Sans"], "body-sm": ["Plus Jakarta Sans"] }, "fontSize": { "caption": ["11px", { "lineHeight": "16px", "fontWeight": "500" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "display-hero": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "title-currency-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "label-btn": ["15px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }], "title-currency-md": ["20px", { "lineHeight": "28px", "fontWeight": "700" }], "headline-sm": ["16px", { "lineHeight": "24px", "fontWeight": "600" }], "headline-md": ["18px", { "lineHeight": "26px", "letterSpacing": "-0.005em", "fontWeight": "600" }], "label-badge": ["11px", { "lineHeight": "14px", "letterSpacing": "0.02em", "fontWeight": "700" }], "body-lg": ["15px", { "lineHeight": "22px", "fontWeight": "500" }], "headline-lg": ["22px", { "lineHeight": "30px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "display-hero-mobile": ["26px", { "lineHeight": "34px", "letterSpacing": "-0.015em", "fontWeight": "700" }], "body-sm": ["12px", { "lineHeight": "18px", "fontWeight": "400" }] } } } };</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-on-surface antialiased"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,46,40,0.04)]"><div class="h-16 px-margin-mobile flex items-center justify-between"><div class="flex items-center gap-space-xs"><button class="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-on-surface hover:bg-surface-container-high/40 transition-colors" onclick="history.back()"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><h1 class="font-headline-md text-headline-md text-on-surface tracking-tight font-bold">Add Transaction</h1></div><div class="flex items-center gap-space-xs"><button class="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/40 transition-colors"><span class="material-symbols-outlined text-[22px]">help_outline</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 pb-safe bg-surface min-h-screen"><div class="flex flex-col w-full relative">
+<!-- Dimmed & Frosted Retail Canvas Background Backdrop (Tactile Ledger Snapshot) -->
+<div class="absolute inset-0 bg-inverse-surface/40 backdrop-blur-md pointer-events-none z-0"></div>
+<!-- Simulated Store Counter Atmosphere Imagery behind scrim -->
+<div class="absolute top-2 left-4 right-4 h-48 opacity-15 overflow-hidden rounded-xl pointer-events-none z-0">
+<div class="bg-cover bg-center w-full h-full" data-alt="Warm atmospheric Indian Kirana retail grocery store interior filled with shelves of grains and spices in soft ambient lighting, modern digital ledger kiosk aesthetic." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCy7nelCcm40I_vtF1v4_XX-fRMXwPzL8-PW6mkvwiMF8uJZJxl95llOtCd_0ofXpe6S4SwehwsdmfPvcNAI-OiuLRKMCfYQdqo_j4NnPlutHZz7Ig3KJfNAn3mJjmyCcR1s0-_pXv6UMfgpvxx5aKcRZzGndwSIPqOv2REOy7wbV9jV7Ol4-KWg5k0aUjQyYls6rcNwEJ4HyLglzzkfb2owMh-msZU1zXd6am8c652')"></div>
+</div>
+<!-- Main Multi-State Bottom Sheet Overlay Canvas -->
+<div class="relative z-10 flex flex-col w-full px-margin-mobile pt-space-xs pb-space-2xl">
+<!-- Sheet Drag Pill & Engine Status Pill Header -->
+<div class="w-full flex flex-col items-center gap-space-xs mb-space-sm">
+<div class="w-12 h-1.5 rounded-full bg-outline-variant/60 shadow-sm"></div>
+<div class="w-full flex items-center justify-between mt-space-2xs">
+<!-- AI Munimji Engine Pill -->
+<div class="flex items-center gap-space-2xs px-space-sm py-1 rounded-full bg-surface-container-highest/80 shadow-sm">
+<span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+<span class="w-2 h-2 -ml-2.5 rounded-full bg-primary"></span>
+<span class="font-caption text-caption text-on-surface-variant font-semibold tracking-wide">Munim Voice Engine v2.4</span>
+<span class="px-1.5 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-caption text-caption">Online</span>
+</div>
+<!-- Close Sheet Action -->
+<button aria-label="Close Voice Assistant" class="w-9 h-9 rounded-full bg-surface-container-high/70 text-on-surface flex items-center justify-center shadow-sm active:scale-95 transition-transform" id="closeOverlayBtn">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+<!-- Interactive Interactive Lifecycle State Switcher (Demonstrates Journey B Lifecycle) -->
+<div class="w-full mb-space-md p-space-2xs bg-surface-container-high rounded-full flex items-center justify-between gap-1 shadow-inner">
+<button class="flex-1 py-1.5 px-space-2xs rounded-full font-caption text-caption font-semibold transition-all duration-200 text-center bg-primary text-on-primary shadow-sm" id="stateBtn-listening" onclick="setVoiceState('listening')">
+        1. Sun Raha Hai
+      </button>
+<button class="flex-1 py-1.5 px-space-2xs rounded-full font-caption text-caption font-semibold transition-all duration-200 text-center text-on-surface-variant hover:text-on-surface" id="stateBtn-processing" onclick="setVoiceState('processing')">
+        2. Soch Raha Hai
+      </button>
+<button class="flex-1 py-1.5 px-space-2xs rounded-full font-caption text-caption font-semibold transition-all duration-200 text-center text-on-surface-variant hover:text-on-surface" id="stateBtn-review" onclick="setVoiceState('review')">
+        3. Khata Padhai
+      </button>
+<button class="flex-1 py-1.5 px-space-2xs rounded-full font-caption text-caption font-semibold transition-all duration-200 text-center text-on-surface-variant hover:text-on-surface" id="stateBtn-error" onclick="setVoiceState('error')">
+        4. Shor / Fallback
+      </button>
+</div>
+<!-- VOICE VISUALIZER HERO CONTAINER (Hardware Soundbox Aesthetic) -->
+<div class="w-full rounded-xl bg-inverse-surface text-inverse-on-surface p-space-md shadow-xl relative overflow-hidden mb-space-md">
+<!-- Glow Gradients -->
+<div class="absolute -top-12 -right-12 w-44 h-44 rounded-full bg-primary/25 blur-3xl pointer-events-none"></div>
+<div class="absolute -bottom-8 -left-8 w-36 h-36 rounded-full bg-tertiary-fixed/20 blur-2xl pointer-events-none"></div>
+<!-- Header status bar inside the voice hub -->
+<div class="flex items-center justify-between relative z-10 mb-space-sm">
+<div class="flex items-center gap-space-xs">
+<div class="w-7 h-7 rounded-lg bg-surface-container-highest/20 flex items-center justify-center text-tertiary-fixed">
+<span class="material-symbols-outlined text-[18px]">graphic_eq</span>
+</div>
+<div>
+<div class="font-headline-sm text-headline-sm text-inverse-on-surface font-semibold leading-tight" id="visualizerTitle">Sun Rahe Hain... (Listening)</div>
+<div class="font-caption text-caption text-secondary-fixed-dim" id="visualizerSubtitle">Paytm Soundbox Mic 2 Matched • Ultra HD 48kHz</div>
+</div>
+</div>
+<div class="flex items-center gap-1 px-space-xs py-0.5 rounded-full bg-primary-container/40">
+<span class="w-2 h-2 rounded-full bg-tertiary-fixed-dim animate-pulse"></span>
+<span class="font-caption text-caption text-tertiary-fixed-dim font-bold">LIVE</span>
+</div>
+</div>
+<!-- Reactive Audio Wave Visualizer Simulation -->
+<div class="relative py-space-sm flex flex-col items-center justify-center">
+<!-- Glowing Sound Orb -->
+<div class="relative flex items-center justify-center mb-space-sm">
+<div class="absolute w-24 h-24 rounded-full bg-primary/20 animate-ping duration-1000" id="pulseRingOuter"></div>
+<div class="absolute w-20 h-20 rounded-full bg-primary-fixed/20 scale-125 transition-transform duration-300" id="pulseRingInner"></div>
+<div class="relative w-16 h-16 rounded-full bg-gradient-to-br from-primary to-surface-tint flex items-center justify-center shadow-lg shadow-primary/30">
+<span class="material-symbols-outlined text-on-primary text-[30px]" id="centerMicIcon" style="font-variation-settings: 'FILL' 1;">mic</span>
+</div>
+</div>
+<!-- Sound Frequency Decibel Bars (Dynamic Heights via inline CSS) -->
+<div class="flex items-end justify-center gap-1.5 h-12 w-full px-space-md" id="audioBarContainer">
+<div class="w-1.5 rounded-full bg-tertiary-fixed-dim h-3 transition-all duration-150 animate-pulse"></div>
+<div class="w-1.5 rounded-full bg-tertiary-fixed-dim h-7 transition-all duration-150 animate-pulse delay-75"></div>
+<div class="w-1.5 rounded-full bg-tertiary-fixed-dim h-11 transition-all duration-150 animate-pulse delay-150"></div>
+<div class="w-1.5 rounded-full bg-primary-fixed h-9 transition-all duration-150 animate-pulse delay-100"></div>
+<div class="w-1.5 rounded-full bg-primary-fixed h-5 transition-all duration-150 animate-pulse delay-200"></div>
+<div class="w-1.5 rounded-full bg-tertiary-fixed-dim h-10 transition-all duration-150 animate-pulse delay-75"></div>
+<div class="w-1.5 rounded-full bg-tertiary-fixed-dim h-6 transition-all duration-150 animate-pulse delay-150"></div>
+<div class="w-1.5 rounded-full bg-tertiary-fixed-dim h-12 transition-all duration-150 animate-pulse delay-300"></div>
+<div class="w-1.5 rounded-full bg-primary-fixed h-8 transition-all duration-150 animate-pulse delay-100"></div>
+<div class="w-1.5 rounded-full bg-tertiary-fixed-dim h-4 transition-all duration-150 animate-pulse delay-200"></div>
+<div class="w-1.5 rounded-full bg-tertiary-fixed-dim h-9 transition-all duration-150 animate-pulse delay-75"></div>
+<div class="w-1.5 rounded-full bg-tertiary-fixed-dim h-2 transition-all duration-150 animate-pulse delay-150"></div>
+</div>
+<!-- Spoken Hindi Phonetics Hint -->
+<p class="mt-space-sm font-caption text-caption text-secondary-fixed text-center" id="audioInstructionPrompt">
+          Dukaan ki aam bhasha mein boliye: "Falane ko ₹X diya / baaki"
+        </p>
+</div>
+</div>
+<!-- DYNAMIC LIFECYCLE CONTAINER -->
+<!-- 1. LIVE TRANSCRIPTION CARD (Review & Live speech) -->
+<div class="w-full bg-surface-container-lowest rounded-xl p-space-md shadow-md mb-space-md" id="transcriptionCard">
+<div class="flex items-center justify-between mb-space-xs">
+<div class="flex items-center gap-space-2xs text-on-surface-variant font-caption text-caption font-semibold">
+<span class="material-symbols-outlined text-[16px] text-primary">translate</span>
+<span>Bol Kar Bola Gaya Sandesh (Hindi/Hinglish)</span>
+</div>
+<button class="flex items-center gap-1 font-caption text-caption font-bold text-primary px-space-xs py-1 rounded-full bg-surface-container-low hover:bg-surface-container active:scale-95 transition-all" id="toggleEditBtn" onclick="toggleEditTranscript()">
+<span class="material-symbols-outlined text-[14px]">edit</span>
+<span>Edit Karein</span>
+</button>
+</div>
+<!-- Transcript Speech Text Area / Editable -->
+<div class="bg-surface-container-low/70 rounded-lg p-space-sm mb-space-xs">
+<p class="font-headline-sm text-headline-sm text-on-surface font-medium italic leading-relaxed" id="transcriptionDisplay">
+          “Sharma ji ko do packet refined tel aur ek bori atta diya paanch sau rupaye baaki”
+        </p>
+<textarea class="hidden w-full bg-surface-container-lowest text-on-surface font-body-md text-body-md rounded-lg p-space-xs shadow-inner focus:outline-none focus:ring-2 focus:ring-primary h-20 resize-none" id="transcriptionInput">Sharma ji ko do packet refined tel aur ek bori atta diya paanch sau rupaye baaki</textarea>
+</div>
+<!-- Confidence & Device Meta Metric -->
+<div class="flex items-center justify-between flex-wrap gap-1 pt-1">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px] text-tertiary">verified</span>
+<span class="font-caption text-caption font-semibold text-on-surface">Confidence: 98.4%</span>
+</div>
+<span class="font-caption text-caption text-outline">Soundbox Mic Matched (Noise Cancelled)</span>
+</div>
+</div>
+<!-- 2. AI PARSED ENTITY EXTRACTION CARD (Instant Structured Breakdown) -->
+<div class="w-full bg-surface-container-lowest rounded-xl p-space-md shadow-md mb-space-md" id="entityCard">
+<div class="flex items-center justify-between mb-space-sm">
+<div class="flex items-center gap-space-2xs">
+<span class="material-symbols-outlined text-primary text-[20px]" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-bold">Munimji Ne Pehchaana (AI Analysis)</h2>
+</div>
+<span class="font-caption text-caption px-space-xs py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-bold">Auto Matched</span>
+</div>
+<!-- Entity Bento Grid -->
+<div class="grid grid-cols-2 gap-space-xs mb-space-sm">
+<!-- Customer / Grahak -->
+<div class="bg-surface-container-low rounded-lg p-space-sm flex flex-col justify-between">
+<div class="flex items-center justify-between mb-1">
+<span class="font-caption text-caption text-on-surface-variant font-medium">Grahak (Customer)</span>
+<span class="material-symbols-outlined text-[16px] text-primary">person_check</span>
+</div>
+<div class="font-headline-sm text-headline-sm text-on-surface font-bold leading-tight">Sharma Ji</div>
+<div class="flex items-center gap-1 mt-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span class="font-caption text-caption text-on-surface-variant">Ledger Khata #42</span>
+</div>
+</div>
+<!-- Transaction Type -->
+<div class="bg-error-container/40 rounded-lg p-space-sm flex flex-col justify-between">
+<div class="flex items-center justify-between mb-1">
+<span class="font-caption text-caption text-on-error-container font-medium">Len-Den Prakar</span>
+<span class="material-symbols-outlined text-[16px] text-error">trending_down</span>
+</div>
+<div class="font-headline-sm text-headline-sm text-error font-bold leading-tight">Udhaar (Credit Given)</div>
+<span class="font-caption text-caption text-on-error-container mt-1">Grahak se lena baaki</span>
+</div>
+<!-- Parsed Amount -->
+<div class="col-span-2 bg-surface-container rounded-lg p-space-sm flex items-center justify-between">
+<div>
+<div class="font-caption text-caption text-on-surface-variant font-semibold">Darg Raqam (Total Udhaar Amount)</div>
+<div class="font-title-currency-lg text-title-currency-lg text-primary font-bold tracking-tight">₹ 500</div>
+</div>
+<div class="px-space-sm py-1 rounded-full bg-primary text-on-primary font-label-badge text-label-badge uppercase tracking-wider">
+            Verified Digits
+          </div>
+</div>
+<!-- Extracted Item List -->
+<div class="col-span-2 bg-surface-container-low rounded-lg p-space-sm">
+<div class="flex items-center justify-between mb-1">
+<span class="font-caption text-caption text-on-surface-variant font-medium">Saamaan Ki List (Items Extracted)</span>
+<span class="font-caption text-caption text-primary font-bold">2 Vastu</span>
+</div>
+<div class="flex flex-wrap gap-1.5 mt-1">
+<div class="flex items-center gap-1 px-space-xs py-1 rounded-md bg-surface-container-lowest shadow-sm">
+<span class="material-symbols-outlined text-[14px] text-secondary">shopping_bag</span>
+<span class="font-body-sm text-body-sm text-on-surface font-semibold">2x Refined Tel</span>
+</div>
+<div class="flex items-center gap-1 px-space-xs py-1 rounded-md bg-surface-container-lowest shadow-sm">
+<span class="material-symbols-outlined text-[14px] text-secondary">inventory_2</span>
+<span class="font-body-sm text-body-sm text-on-surface font-semibold">1x Bori Atta</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- EDGE CASES & FALLBACKS CALLOUT BANNER -->
+<div class="w-full bg-surface-container-high rounded-xl p-space-sm mb-space-md" id="fallbackStateNotice">
+<div class="flex items-center justify-between cursor-pointer" onclick="toggleAccordion('edgeDrawer')">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[20px] text-secondary">help_center</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Munimji Edge Cases &amp; Sahayata</span>
+</div>
+<span class="material-symbols-outlined text-[20px] text-on-surface-variant transition-transform" id="accordionArrow">expand_more</span>
+</div>
+<!-- Collapsible edge states info -->
+<div class="hidden flex-col gap-space-xs pt-space-xs mt-space-xs" id="edgeDrawer">
+<!-- Edge Case A: Unmatched Name -->
+<div class="p-space-xs rounded-lg bg-surface-container-lowest shadow-sm flex items-start gap-space-xs">
+<span class="material-symbols-outlined text-[18px] text-primary shrink-0 mt-0.5">person_add</span>
+<div>
+<div class="font-body-sm text-body-sm text-on-surface font-bold">Agar Naya Grahak Ho?</div>
+<p class="font-caption text-caption text-on-surface-variant">Agar Sharma ji khate mein nahi milte, to AI Munim automatically "Naya Khata Kholein" ka button de deta hai.</p>
+</div>
+</div>
+<!-- Edge Case B: Mic Denied / High Noise Fallback -->
+<div class="p-space-xs rounded-lg bg-surface-container-lowest shadow-sm flex items-start gap-space-xs">
+<span class="material-symbols-outlined text-[18px] text-error shrink-0 mt-0.5">mic_off</span>
+<div>
+<div class="font-body-sm text-body-sm text-on-surface font-bold">Mic Denied ya Counter Shor?</div>
+<p class="font-caption text-caption text-on-surface-variant">Soundbox offline hone par turant numeric keypad switch prompt khulta hai bina data loss ke.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- ERROR / AMBIGUOUS STATE BANNER (Shown during state 4) -->
+<div class="hidden w-full bg-error-container text-on-error-container rounded-xl p-space-md mb-space-md" id="errorBanner">
+<div class="flex items-start gap-space-xs">
+<span class="material-symbols-outlined text-[24px] text-error">volume_off</span>
+<div class="flex-1">
+<div class="font-headline-sm text-headline-sm font-bold text-on-error-container">Aawaz Saaf Nahi Sunai Di</div>
+<p class="font-body-sm text-body-sm mt-0.5 text-on-error-container">Counter par tez horn ya shor tha. Kripya dobara bolein ya manual keypad se darj karein.</p>
+<div class="flex items-center gap-space-xs mt-space-sm">
+<button class="px-space-sm py-1.5 rounded-full bg-error text-on-error font-label-badge text-label-badge font-bold active:scale-95 transition-transform" onclick="setVoiceState('listening')">
+              Dobara Bolein
+            </button>
+<button class="px-space-sm py-1.5 rounded-full bg-surface-container-lowest text-on-surface font-label-badge text-label-badge font-bold shadow-sm active:scale-95 transition-transform" onclick="switchToKeypadManual()">
+              Keypad Switch Karein
+            </button>
+</div>
+</div>
+</div>
+</div>
+<!-- TACTILE ACTION DOCK (Primary Confirm & Quick Retry) -->
+<div class="w-full flex flex-col gap-space-xs pt-space-2xs">
+<!-- Big Tactile Primary Pill Action -->
+<button class="w-full h-14 rounded-full bg-primary text-on-primary font-label-btn text-label-btn flex items-center justify-center gap-space-xs shadow-lg shadow-primary/25 hover:bg-surface-tint active:scale-[0.98] transition-all" id="confirmRecordBtn" onclick="handleConfirmEntry()">
+<span class="material-symbols-outlined text-[22px]">book_online</span>
+<span>Khata Mein Darj Karein (Confirm &amp; Save)</span>
+<span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+<!-- Secondary Mint Action Pill -->
+<button class="w-full h-12 rounded-full bg-surface-container-high text-on-surface font-label-btn text-label-btn flex items-center justify-center gap-space-xs hover:bg-surface-container-highest active:scale-[0.98] transition-all" id="retryVoiceBtn" onclick="setVoiceState('listening')">
+<span class="material-symbols-outlined text-[20px] text-primary">mic</span>
+<span>Dobara Bolein (Tap to Re-record Voice)</span>
+</button>
+<!-- Micro Safety Guarantee Footnote -->
+<div class="flex items-center justify-center gap-1.5 text-on-surface-variant pt-space-xs">
+<span class="material-symbols-outlined text-[14px] text-tertiary">lock</span>
+<span class="font-caption text-caption">100% Encrypted Ledger Entry • Paytm Soundbox Verified</span>
+</div>
+</div>
+</div>
+</div>
+<script>
+  function setVoiceState(state) {
+    const listeningBtn = document.getElementById('stateBtn-listening');
+    const processingBtn = document.getElementById('stateBtn-processing');
+    const reviewBtn = document.getElementById('stateBtn-review');
+    const errorBtn = document.getElementById('stateBtn-error');
+
+    const vTitle = document.getElementById('visualizerTitle');
+    const vSubtitle = document.getElementById('visualizerSubtitle');
+    const pPrompt = document.getElementById('audioInstructionPrompt');
+    const errorBanner = document.getElementById('errorBanner');
+    const entityCard = document.getElementById('entityCard');
+    const transcriptionCard = document.getElementById('transcriptionCard');
+    const confirmBtn = document.getElementById('confirmRecordBtn');
+
+    // Reset button styles
+    [listeningBtn, processingBtn, reviewBtn, errorBtn].forEach(btn => {
+      btn.className = "flex-1 py-1.5 px-space-2xs rounded-full font-caption text-caption font-semibold transition-all duration-200 text-center text-on-surface-variant hover:text-on-surface";
+    });
+
+    const activeClass = "flex-1 py-1.5 px-space-2xs rounded-full font-caption text-caption font-semibold transition-all duration-200 text-center bg-primary text-on-primary shadow-sm";
+
+    if (state === 'listening') {
+      listeningBtn.className = activeClass;
+      vTitle.innerText = "Sun Rahe Hain... (Listening)";
+      vSubtitle.innerText = "Paytm Soundbox Mic 2 Matched • Ultra HD 48kHz";
+      pPrompt.innerText = "Dukaan ki aam bhasha mein boliye: \"Falane ko ₹X diya / baaki\"";
+      errorBanner.classList.add('hidden');
+      entityCard.classList.remove('hidden');
+      transcriptionCard.classList.remove('hidden');
+      confirmBtn.classList.remove('opacity-50');
+    } else if (state === 'processing') {
+      processingBtn.className = activeClass;
+      vTitle.innerText = "Munimji Soch Rahe Hain...";
+      vSubtitle.innerText = "Natural Language Understanding (Hindi/Hinglish NLP)";
+      pPrompt.innerText = "Awaz ko anko aur vastuon mein convert kiya ja raha hai...";
+      errorBanner.classList.add('hidden');
+    } else if (state === 'review') {
+      reviewBtn.className = activeClass;
+      vTitle.innerText = "Pura Padh Liya Gaya Hai";
+      vSubtitle.innerText = "Ledger Confirmation Required before Save";
+      pPrompt.innerText = "Kripya niche diye gaye vivran ko dekh kar pushti karein.";
+      errorBanner.classList.add('hidden');
+      entityCard.classList.remove('hidden');
+      transcriptionCard.classList.remove('hidden');
+    } else if (state === 'error') {
+      errorBtn.className = "flex-1 py-1.5 px-space-2xs rounded-full font-caption text-caption font-semibold transition-all duration-200 text-center bg-error text-on-error shadow-sm";
+      vTitle.innerText = "Awaz Samajh Nahi Aayi (Retry)";
+      vSubtitle.innerText = "Mic Interrupted or Background Noise High";
+      pPrompt.innerText = "Counter par horn baj raha tha, kripya dobara aawaz de.";
+      errorBanner.classList.remove('hidden');
+    }
+  }
+
+  function toggleAccordion(id) {
+    const el = document.getElementById(id);
+    const arrow = document.getElementById('accordionArrow');
+    if (el.classList.contains('hidden')) {
+      el.classList.remove('hidden');
+      el.classList.add('flex');
+      arrow.innerText = 'expand_less';
+    } else {
+      el.classList.add('hidden');
+      el.classList.remove('flex');
+      arrow.innerText = 'expand_more';
+    }
+  }
+
+  function toggleEditTranscript() {
+    const disp = document.getElementById('transcriptionDisplay');
+    const input = document.getElementById('transcriptionInput');
+    const btn = document.getElementById('toggleEditBtn');
+
+    if (input.classList.contains('hidden')) {
+      input.classList.remove('hidden');
+      disp.classList.add('hidden');
+      input.focus();
+      btn.innerHTML = `<span class="material-symbols-outlined text-[14px]">done</span><span>Save Edit</span>`;
+    } else {
+      disp.innerText = `"${input.value}"`;
+      input.classList.add('hidden');
+      disp.classList.remove('hidden');
+      btn.innerHTML = `<span class="material-symbols-outlined text-[14px]">edit</span><span>Edit Karein</span>`;
+    }
+  }
+
+  function switchToKeypadManual() {
+    alert("Switching to Manual Ledger Numpad Mode...");
+  }
+
+  function handleConfirmEntry() {
+    const btn = document.getElementById('confirmRecordBtn');
+    btn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[20px]">progress_activity</span><span>Khata Mein Likha Ja Raha Hai...</span>`;
+    setTimeout(() => {
+      btn.className = "w-full h-14 rounded-full bg-tertiary-container text-on-tertiary-container font-label-btn text-label-btn flex items-center justify-center gap-space-xs shadow-lg transition-all";
+      btn.innerHTML = `<span class="material-symbols-outlined text-[24px]">check_circle</span><span>Safaltapoorvak Darj Ho Gaya!</span>`;
+    }, 900);
+  }
+
+  document.getElementById('closeOverlayBtn')?.addEventListener('click', () => {
+    window.history.back();
+  });
+</script></main></body></html>
