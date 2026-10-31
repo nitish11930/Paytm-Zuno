@@ -30,6 +30,8 @@ test("Supabase PostgreSQL persistence and concurrency integration", async (t) =>
     assert.equal(snap1.merchant.shop, "Ramesh Kirana");
     assert.equal(snap1.cash, 1200000); // 1200000 opening + 85000 + 35000 - 120000
     assert.equal(snap1.dues.length, 4);
+    await repo.updateShop(testMerchant, {shop:"Setup test",owner:"Test owner",language:"english"});
+    assert.equal((await repo.snapshot(testMerchant)).merchant.setup, 1);
 
     // 3. Add an entry with promised repayment date
     const udhaarEntry = await repo.addEntry(testMerchant, {

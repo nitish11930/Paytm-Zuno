@@ -5,7 +5,7 @@ import { randomUUID, randomBytes, createHash } from "node:crypto";
 import { day, cash as calcCash, DomainError } from "./core.js";
 import { validDueDate, friendlyReminder, dailyBooks } from "./domain.js";
 import { parseCsv, exactDate, rupees, same } from "./payment-import.js";
-import { parseOrderText } from "./inventory.js";
+import { parseOrderText, DEFAULT_KIRANA_PRODUCTS } from "./inventory.js";
 import { understand } from "./understanding.js";
 import { extractPromise } from "./promise-date.js";
 
@@ -257,7 +257,7 @@ export function createPostgresRepository(pool) {
 
     async updateShop(m, values) {
       await q(
-        "UPDATE zuno.merchants SET shop = $1, owner = $2, language = $3 WHERE id = $4",
+        "UPDATE zuno.merchants SET shop = $1, owner = $2, language = $3, setup = 1 WHERE id = $4",
         [values.shop, values.owner, values.language, m],
       );
     },
