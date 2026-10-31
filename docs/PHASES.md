@@ -83,3 +83,18 @@ Implemented complete 9-step merchant order, billing, and inventory flow per owne
 
 
 2026-10-31 — WhatsApp Web manual handoff implemented in reminder review: selected recipient phone input -> server-validated draft URL -> explicit Open WhatsApp Web link. Server checks merchant/recipient, proposal expiry/status and current unpaid snapshot; validates international number (10-digit Indian mobile normalizes to 91). No QR session capture, automatic send, delivery assertion, ledger changes or persistent contact storage. User presses Send in their own WhatsApp Web account. Removed simulation approval button from this review flow. Browser tested URL generation with temporary QA number then cleared it; no external chat opened and no message sent. 62 tests/build passed, including cross-merchant, invalid phone, expiry and no-sent-state coverage.
+
+## Supabase PostgreSQL Persistence & Data Migration — 31 October 2026
+1. Verified consistent SQLite backup in `data/backups/zuno-*.sqlite` using SQLite backup API.
+2. Verified live connection and certificate verification with official Supabase root CA (`privacy/supabase-ca.crt`).
+3. Private schema `zuno` expanded to 21 tables including product catalog, orders, and order_items.
+4. Data migration executed via `scripts/migrate-to-supabase.mjs`:
+   - Single atomic transaction in foreign-key order.
+   - Verified 100% parity across table counts, merchant IDs, entries, customers, dues, and cash balances (`npm run supabase:verify`).
+5. Asynchronous PostgreSQL repository implemented in `server/postgres.js`:
+   - Safe BIGINT decoding (`pg.types.setTypeParser(INT8)`) ensuring integer paise safety.
+   - Row-level locking (`FOR UPDATE`) on dues during collection to eliminate race conditions and over-collections under concurrency.
+   - Provider-agnostic adapter in `server/sqlite-adapter.js` and `server/app.js` with fail-safe error handling.
+6. Server startup configured in `server/index.js` to initialize Supabase PostgreSQL repository with clean provider reporting without secret exposure.
+7. End-to-end integration tests in `tests/supabase.test.js` validating auth sessions, state snapshots, concurrency locking, and product/order flows against live Supabase PostgreSQL.
+8. Validation: 64 tests passing, production Vite build passing (`npm run check`).

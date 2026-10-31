@@ -1,15 +1,29 @@
-# Supabase setup — connection and empty schema verified
+# Supabase setup — connection, schema, data migration & live persistence complete
 
-The live app still uses SQLite. These commands prepare a PostgreSQL database; they do not switch the app or upload local records.
+Status:
+- Connection: VERIFIED with TLS CA certificate (`privacy/supabase-ca.crt`).
+- Schema: 21 tables created in private `zuno` schema on Supabase (including products, orders, order_items).
+- Data migration: 100% verified equal between SQLite and Supabase PostgreSQL (`npm run supabase:verify`).
+- Application persistence: Express backend uses `server/postgres.js` with `server/sqlite-adapter.js` fallback. All 64 integration and unit tests pass.
 
-1. Open https://supabase.com/dashboard and create a Free project named `zuno`. Choose a nearby region when offered. Keep the database password in your password manager.
-2. In the project click **Connect → Session pooler**. Copy the PostgreSQL URI, replacing its password placeholder with your URL-encoded database password.
-3. Save it as `SUPABASE_DB_URL=...` in ignored `privacy/supabase.env` (file permissions 600). Do not send it in chat, put it in a VITE variable, or commit it. No service-role API key is needed for this SQL connection.
-4. Run `npm run supabase:check`. TLS verification stays enabled. If a custom CA is needed, download your database certificate from Supabase and set `SUPABASE_DB_CA_PATH` to the local certificate path.
-5. Run `npm run supabase:schema` to create the empty private `zuno` schema. It refuses an existing schema rather than modifying one. Local data is untouched. Dashboard SQL Editor can inspect `select * from zuno.entries limit 20;` after migration. Browser anon/authenticated roles have no access to the schema.
+## Architecture & Credentials
+1. Project: `https://supabase.com/dashboard/project/mewymxszzqhaooztctef` (zuno).
+2. Credentials stored exclusively in ignored `privacy/supabase.env` (`SUPABASE_DB_URL`, `SUPABASE_DB_CA_PATH`). Never committed or leaked to client/browser.
+3. Strict TLS certificate verification enabled (`rejectUnauthorized: true`).
+4. Schema isolation: Private `zuno` schema with `REVOKE ALL ON SCHEMA zuno FROM PUBLIC, anon, authenticated;`. Browser clients communicate only via Express API endpoints with same-site HTTP-only cookies.
+5. Concurrency safety: Row-level locks (`SELECT ... FOR UPDATE`) protect dues from over-collection during concurrent payments. Transactions checked out via `withTransaction(pool, fn)`.
+6. Safe integer parsing: `pg.types.setTypeParser(INT8)` safely checks and parses 64-bit BigInt into JavaScript safe integers. Integer paise only.
 
-Next engineering work: replace the synchronous SQLite repository calls with async PostgreSQL queries using a checked-out client per transaction, preserve finance and merchant isolation tests, migrate a consistent SQLite backup in foreign-key order, verify record counts/balances and switch only after successful comparison. Do not use an HTTP-based write mirror as the authoritative ledger or call a setup check a finished migration. Production identity/authorization is still a separate release requirement.
+## Commands
+- `npm run supabase:check`: Verifies direct connection and TLS certificate to Supabase PostgreSQL.
+- `npm run supabase:schema`: Applies idempotent schema migrations if not present.
+- `npm run supabase:migrate`: Runs data migration from local SQLite to Supabase PostgreSQL inside a single transaction in foreign-key order. Supports `--dry-run`.
+- `npm run supabase:verify`: Compares table counts, merchant IDs, cash balances, dues, and relations between SQLite and Supabase.
+- `npm test`: Runs all 64 unit and live Supabase integration tests (`tests/*.test.js`).
+- `npm run check`: Runs tests and Vite production build.
 
-Official connection guide: https://supabase.com/docs/guides/database/connecting-to-postgres
-
-Current project: https://supabase.com/dashboard/project/mewymxszzqhaooztctef . Verified connection and private zuno schema created on 2026-10-31. Active app storage is still SQLite; no local data imported. Previous project ixhjmqzpqmoooziojiov is no longer configured.
+## Rollback Steps
+If cloud database connection becomes unavailable:
+1. SQLite local fallback is preserved in `data/zuno.sqlite` (and automatic backups in `data/backups/`).
+2. To force SQLite provider explicitly, set `DB_PROVIDER=sqlite` in `.env`.
+3. To switch back to Supabase PostgreSQL, set `DB_PROVIDER=postgres` (or ensure `SUPABASE_DB_URL` is set in `privacy/supabase.env`).

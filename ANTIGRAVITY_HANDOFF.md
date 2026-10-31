@@ -103,3 +103,14 @@ Preserved existing voice ledger without touching audio capture or voice turns. B
 
 
 2026-10-31 — WhatsApp Web manual handoff implemented in reminder review: selected recipient phone input -> server-validated draft URL -> explicit Open WhatsApp Web link. Server checks merchant/recipient, proposal expiry/status and current unpaid snapshot; validates international number (10-digit Indian mobile normalizes to 91). No QR session capture, automatic send, delivery assertion, ledger changes or persistent contact storage. User presses Send in their own WhatsApp Web account. Removed simulation approval button from this review flow. Browser tested URL generation with temporary QA number then cleared it; no external chat opened and no message sent. 62 tests/build passed, including cross-merchant, invalid phone, expiry and no-sent-state coverage.
+
+## Supabase PostgreSQL Persistence & Migration — 31 October 2026 (Live)
+- Project: https://supabase.com/dashboard/project/mewymxszzqhaooztctef (zuno, Paris). Credentials in `privacy/supabase.env`.
+- Database backup created in `data/backups/zuno-*.sqlite`.
+- Supabase schema `zuno` contains 21 tables with strict TLS certificate verification (`privacy/supabase-ca.crt`).
+- Migration completed via `scripts/migrate-to-supabase.mjs`: single atomic transaction in foreign-key order. All 3 merchants, 27 entries, 11 customers, 48 schedules, 2 due terms, and cash balances verified 100% equal (`npm run supabase:verify`).
+- Implemented `server/postgres.js` (full PostgreSQL repository) and `server/sqlite-adapter.js` (unified provider adapter).
+- Express backend (`server/app.js`, `server/index.js`) seamlessly supports both Supabase PostgreSQL and local SQLite fallback.
+- Over-collection concurrency protection enforced with PostgreSQL row locks (`SELECT ... FOR UPDATE`).
+- Integer paise only; BIGINT safely decoded to JavaScript safe integers.
+- All 64 tests pass (`npm test`), production build passes (`npm run check`).

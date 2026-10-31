@@ -106,3 +106,13 @@ Read docs/DAYWISE_IMPORT_AND_VOICE_FIXES.md. Day-wise Khata totals come from ser
 
 
 2026-10-31 — WhatsApp Web manual handoff implemented in reminder review: selected recipient phone input -> server-validated draft URL -> explicit Open WhatsApp Web link. Server checks merchant/recipient, proposal expiry/status and current unpaid snapshot; validates international number (10-digit Indian mobile normalizes to 91). No QR session capture, automatic send, delivery assertion, ledger changes or persistent contact storage. User presses Send in their own WhatsApp Web account. Removed simulation approval button from this review flow. Browser tested URL generation with temporary QA number then cleared it; no external chat opened and no message sent. 62 tests/build passed, including cross-merchant, invalid phone, expiry and no-sent-state coverage.
+
+2026-10-31 — Complete Real Supabase PostgreSQL Persistence & Migration:
+- Verified SQLite backup created in data/backups/ using backup API.
+- Updated live Supabase schema in private zuno with products, orders, and order_items tables.
+- Implemented scripts/migrate-to-supabase.mjs with --dry-run and --verify modes. Executed full single-transaction migration in foreign-key order. All 3 merchants, 27 entries, 11 customers, 48 schedules, 2 due terms, and cash balances (1300000, 1200000, 1220000 paise) verified 100% equal between SQLite and Supabase PostgreSQL.
+- Implemented full PostgreSQL repository in server/postgres.js with client pooling, withTransaction, safe integer parsing (INT8), row-level concurrency locking (FOR UPDATE) preventing over-collection of dues, transactional atomicity, and complete domain operations.
+- Implemented unified createSqliteRepository adapter in server/sqlite-adapter.js so that Express backend in server/app.js is provider-agnostic, supporting both live Supabase PostgreSQL and local SQLite fallback.
+- Added live Supabase integration tests in tests/supabase.test.js: verifies schema, auth sessions, concurrency locking on collections, reversals, and full Express API order/billing workflow against cloud database.
+- Configured server/index.js to initialize Supabase PostgreSQL repository with verified TLS, failing safely if cloud database is unavailable without silent SQLite double writes.
+- 64 tests and production build pass (npm run check). All Sarvam AI credentials configured in privacy/sarvam.env.

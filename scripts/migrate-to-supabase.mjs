@@ -9,9 +9,13 @@ const args = process.argv.slice(2);
 const isDryRun = args.includes("--dry-run");
 const isVerifyOnly = args.includes("--verify");
 
-const sqlitePath = existsSync("data/zuno.sqlite")
-  ? "data/zuno.sqlite"
-  : "data/munim.sqlite";
+const sqliteArgIdx = args.indexOf("--sqlite");
+const sqlitePath =
+  sqliteArgIdx !== -1 && args[sqliteArgIdx + 1]
+    ? args[sqliteArgIdx + 1]
+    : existsSync("data/zuno.sqlite")
+      ? "data/zuno.sqlite"
+      : "data/munim.sqlite";
 
 if (!existsSync(sqlitePath)) {
   console.error(`SQLite file not found at ${sqlitePath}`);
@@ -180,7 +184,13 @@ async function verifyComparison(pgClient, sqliteDb) {
     }
 
     // Postgres opening & entries
-    const pgM = (await pgClient.query("SELECT opening FROM zuno.merchants WHERE id=$1", [m.id])).rows[0];
+    const pgMRes = await pgClient.query("SELECT opening FROM zuno.merchants WHERE id=$1", [m.id]);
+    if (!pgMRes.rows.length) {
+      console.error(`❌ Merchant missing in Postgres: ${m.id}`);
+      allMatched = false;
+      continue;
+    }
+    const pgM = pgMRes.rows[0];
     const pgEntries = (await pgClient.query(`
       SELECT e.*, (SELECT 1 FROM zuno.entry_voids v WHERE v.entry_id=e.id) as reversed
       FROM zuno.entries e WHERE merchant=$1
