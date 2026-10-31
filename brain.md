@@ -124,3 +124,11 @@ Read docs/DAYWISE_IMPORT_AND_VOICE_FIXES.md. Day-wise Khata totals come from ser
 2026-10-31 — Microphone-open blank-screen hotfix: reproduced live TypeError reading undefined draft.name. PostgreSQL no-current-draft response was {active:false}, unlike SQLite null. Return null and guard frontend restore on draft presence. Added isolated PostgreSQL repository regression. 10 voice tests + build passed; live redeploy verification required.
 
 Hotfix verified: 52b772c deployed successfully on Render (dep-dbisdp6tlv9c73bjo0eg). Reloaded production app, opened header microphone, waited for empty-draft restore and confirmed voice panel stayed mounted with mic enabled. Full 65 tests + build passed. Proof: outputs/release/zuno-mic-fixed.png in chat workspace.
+
+2026-10-31 16:50 IST — Voice draft multi-turn loop hotfix & GitHub push:
+- Fixed draft field retention across multi-turn voice flows (`applyVoiceFields`) so existing `amount`, `name`, and `kind` are never wiped by null understanding passes.
+- Expanded Hindi number table with tens words (`bees`, `tees`, `chalis`, `pachas`, `sath`, `sattar`, `assi`, `nabbe`) and allowed spoken amount words.
+- Added relative promise date handling for `parso` / `parson` and declination replies (`date tay nahi`, `pata nahi`, `baad mein`, `nahi`).
+- Fixed PostgreSQL voice draft updates to use `applyVoiceFields` under transactional client checkout.
+- Updated `render.yaml` with `autoDeployTrigger: commit`.
+- Full 66 tests pass across unit, integration, and live Supabase suites. Pushed to `https://github.com/nitish11930/Paytm-Zuno` (commit `abf86dd`).
