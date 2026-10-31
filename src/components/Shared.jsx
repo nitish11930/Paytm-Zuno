@@ -8,7 +8,7 @@ export function Brand({ light = false }) {
         <span />
       </span>
       <span>
-        munim<span className="brand-dot">.</span>
+        zuno<span className="brand-dot">.</span>
       </span>
     </div>
   );

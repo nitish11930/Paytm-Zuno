@@ -1,4 +1,4 @@
-package in.munim.demo;
+package in.zuno.demo;
 
 import android.Manifest;
 import android.app.Activity;
@@ -82,7 +82,7 @@ public final class MainActivity extends Activity {
     offline = new LinearLayout(this);
     offline.setOrientation(LinearLayout.VERTICAL);offline.setGravity(Gravity.CENTER);offline.setPadding(dp(30),dp(30),dp(30),dp(30));
     offline.setBackgroundColor(Color.rgb(246,250,247));
-    TextView title=new TextView(this);title.setText("Munim");title.setTextSize(32);title.setTextColor(Color.rgb(6,75,58));title.setGravity(Gravity.CENTER);offline.addView(title);
+    TextView title=new TextView(this);title.setText("Zuno");title.setTextSize(32);title.setTextColor(Color.rgb(6,75,58));title.setGravity(Gravity.CENTER);offline.addView(title);
     TextView help=new TextView(this);help.setText("Unable to connect securely.\nCheck your internet connection and try again.\nThis test app needs its online server.");help.setTextSize(16);help.setGravity(Gravity.CENTER);help.setPadding(0,dp(24),0,dp(24));offline.addView(help);
     Button retry=new Button(this);retry.setText("Try again");retry.setOnClickListener(v->load());offline.addView(retry);
     root.addView(offline,new FrameLayout.LayoutParams(-1,-1));offline.setVisibility(View.GONE);
@@ -128,8 +128,8 @@ public final class MainActivity extends Activity {
         try{
           DownloadManager.Request req=new DownloadManager.Request(uri);
           String cookie=CookieManager.getInstance().getCookie(url);if(cookie!=null)req.addRequestHeader("Cookie",cookie);
-          req.setTitle("Munim records");req.setMimeType("application/json");
-          req.setDestinationInExternalFilesDir(this,Environment.DIRECTORY_DOWNLOADS,"munim-records-"+System.currentTimeMillis()+".json");
+          req.setTitle("Zuno records");req.setMimeType("application/json");
+          req.setDestinationInExternalFilesDir(this,Environment.DIRECTORY_DOWNLOADS,"zuno-records-"+System.currentTimeMillis()+".json");
           req.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
           ((DownloadManager)getSystemService(DOWNLOAD_SERVICE)).enqueue(req);
           Toast.makeText(this,"Download started",Toast.LENGTH_SHORT).show();
@@ -143,7 +143,7 @@ public final class MainActivity extends Activity {
   @Override public void onRequestPermissionsResult(int code,String[] permissions,int[] results){super.onRequestPermissionsResult(code,permissions,results);if(code==MIC){requestingMic=false;boolean granted=results.length>0 && results[0]==PackageManager.PERMISSION_GRANTED;if(granted && !inForeground)grantOnResume=true;else finishMic(granted);}}
   @Override protected void onActivityResult(int request,int result,Intent data){super.onActivityResult(request,result,data);if(request==FILE && pendingFile!=null){pendingFile.onReceiveValue(result==RESULT_OK && data!=null && data.getData()!=null ? new Uri[]{data.getData()} : null);pendingFile=null;}}
   @Override protected void onResume(){super.onResume();inForeground=true;if(grantOnResume){grantOnResume=false;finishMic(true);}if(web!=null)web.onResume();}
-  @Override protected void onPause(){inForeground=false;if(!requestingMic)finishMic(false);if(web!=null){web.evaluateJavascript("window.dispatchEvent(new Event('munim:native-pause'))",null);web.onPause();}CookieManager.getInstance().flush();super.onPause();}
+  @Override protected void onPause(){inForeground=false;if(!requestingMic)finishMic(false);if(web!=null){web.evaluateJavascript("window.dispatchEvent(new Event('zuno:native-pause'))",null);web.onPause();}CookieManager.getInstance().flush();super.onPause();}
   @Override public void onBackPressed(){if(web!=null && web.canGoBack())web.goBack();else super.onBackPressed();}
   @Override protected void onDestroy(){finishMic(false);if(pendingFile!=null)pendingFile.onReceiveValue(null);if(web!=null){web.stopLoading();web.destroy();}super.onDestroy();}
 }

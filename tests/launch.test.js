@@ -304,18 +304,18 @@ test("complete archive includes all audit, reversal and linkage records but no a
 });
 test("configured HTTPS origin works while untrusted origin stays blocked", async () => {
   const old = process.env.APP_ORIGIN;
-  process.env.APP_ORIGIN = "https://munim.example";
+  process.env.APP_ORIGIN = "https://zuno.example";
   const db = database(":memory:");
   try {
     const a = request.agent(createApp(db));
     await a
       .post("/api/auth/login")
-      .set("Origin", "https://munim.example")
+      .set("Origin", "https://zuno.example")
       .send(creds)
       .expect(200);
     await a
       .post("/api/actions/propose")
-      .set("Origin", "https://munim.example")
+      .set("Origin", "https://zuno.example")
       .send({})
       .expect(201);
     await a
@@ -356,7 +356,7 @@ test("EMI estimates use reducing balance, handle zero interest and reject invali
   db.close();
 });
 test("owner-only SQLite backup restores full ledger and history into a new verified file", async () => {
-  const dir = mkdtempSync(join(tmpdir(), "munim-restore-"));
+  const dir = mkdtempSync(join(tmpdir(), "zuno-restore-"));
   const source = join(dir, "original.sqlite"),
     target = join(dir, "backup.sqlite"),
     restored = join(dir, "restored.sqlite");

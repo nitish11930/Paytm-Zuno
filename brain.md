@@ -60,3 +60,49 @@ Read docs/ZUNO_WORKFLOW_PROGRESS.md. Voice-ledger now asks promised payment date
 
 ## Day-wise import + audio usability fixes — latest
 Read docs/DAYWISE_IMPORT_AND_VOICE_FIXES.md. Day-wise Khata totals come from server. Header CSV report import supports mapping/review/dedup, separates settlements, and requires explicit link/classification before money changes. No direct bank/Soundbox connection. Voice template preserved; pending draft and exact next question restore, errors/prompts/save action now visible, recording timer and cancellation guards added; command minimum 1s, enrollment 10s. Due-day voice payment check -> scoped draft -> WhatsApp delivery_pending (not sent). 53 tests + build/format and 2 Python tests pass; actual human voice verification still needs owner test. Browser advanced existing Sharma ji ₹200 draft to 2026-11-03 confirmation but DID NOT save financial entry. Keep original user data and speaker template. WhatsApp setup explicitly pending per owner.
+
+
+2026-10-31 — Owner voice mismatch usability: consistent mono/noise-suppressed capture; energy-based edge-silence trimming before embeddings; explicit Reset voice / Set up again with confirmation, consent reset and ledger/draft preservation; duplicate modal alert removed. Threshold unchanged. 53 Node tests/build and 3 Python tests passed. Existing owner template preserved; user must re-enroll and test actual voice. This is an uncalibrated local speaker prototype, not validated authentication.
+
+
+2026-10-31 — User explicitly replaced owner-only voice with simple tap-to-speak for any speaker in the signed-in workspace. Removed enrollment/reset/consent UI, owner status startup request, speaker verification and owner API routes from runtime. Python prototype files/templates remain untouched but unused. Audio now goes directly to Sarvam STT; login, merchant isolation, rate limits, replay protection and explicit financial save confirmation remain. 53 Node tests + build pass, including mocked audio-to-ledger flow without enrollment and unauthenticated upload rejection. Human microphone accuracy remains unverified. WhatsApp delivery setup still pending.
+
+
+2026-10-31 — Shortened voice questions (no examples). Completed-entry mic starts fresh draft automatically, and New entry can interrupt completed reply playback/TTS without waiting. Reset clears transient audio/retry state; aborted TTS cannot restore old playback/error. Browser verified saved Sharma entry mic enabled and New entry restores editable input; no additional financial entry saved during QA. 54 tests/build passed; regression covers concise promise question and independent second draft.
+
+
+2026-10-31 — Supabase requested; owner confirms no project exists yet. Prepared ignored privacy/supabase.env (600), pg dependency, verified-TLS connection/schema commands and private munim SQL schema. See docs/SUPABASE_SETUP.md. No cloud connection or local data upload performed; live app remains SQLite. Full asynchronous PostgreSQL repository conversion and balance-checked data migration remain pending, not completed. 54 tests/build pass; blank configuration fails safely.
+
+
+2026-10-31 — User confirmed full app brand Zuno. Updated wordmark, all voice labels, title/description/PWA metadata, export filename, package name and Android display label. Supabase project display name should be zuno. Retain existing folder for project continuity; backup created for data/zuno.sqlite.
+
+2026-10-31 — Complete code & configuration rename to Zuno per user instruction:
+- Supabase: renamed schema to `zuno` and migration file to `supabase/migrations/202610310001_zuno_schema.sql`. Updated `scripts/supabase.mjs` and `docs/SUPABASE_SETUP.md`.
+- Android & APK: changed Android package to `in.zuno.demo`, moved Java source to `android/app/src/main/java/in/zuno/demo/MainActivity.java`, updated native event to `zuno:native-pause`, updated `scripts/build-apk.mjs` with `ZUNO_ANDROID_URL`, keystore alias `zuno-test` and `Zuno-Test.apk`.
+- SQLite & Backup: backed up `data/munim.sqlite` to `data/zuno.sqlite` using SQLite backup API; updated `server/domain.js` and `scripts/backup.mjs` default source to `data/zuno.sqlite` with fallback to `data/munim.sqlite`.
+- Session & Cookie Security: updated `server/app.js` cookies to `zuno` and `zuno_device`, retaining reading and logout clearing for `munim` / `munim_device`.
+- Web Frontend: updated `src/main.jsx` storage keys to `zuno-language` and `zuno-pending-entry-` with fallback, updated `src/components/Voice.jsx` native event listener.
+- Configs & Tests: updated `.env.example` (`APP_ORIGIN=https://zuno.example`), `README.md`, `Dockerfile` (`zuno-entrypoint`), `render.yaml` (`zuno-friend-test`), `tests/launch.test.js`, `tests/budget.test.js`, and `.vscode/tasks.json`. All 54 tests, web build, and Android compile check pass.
+
+
+2026-10-31 — Supabase target replaced at owner request with mewymxszzqhaooztctef (zuno, Paris). New server-only URI saved in ignored privacy/supabase.env with percent-encoded password. Downloaded Supabase root CA from official supabase-downloads S3 endpoint; verified-TLS connection succeeded. Private zuno schema creation succeeded using npm run supabase:schema. No local ledger records uploaded; live app STILL SQLite. Do not claim live PostgreSQL persistence until async repository conversion and data comparison are completed. Old cloud project was not deleted.
+
+
+2026-10-31 — Zuno Inventory, Product Catalog & 9-Step Order Management Flow implemented:
+- Preserved existing voice ledger (`src/components/Voice.jsx`, `server/voice-ledger.js`) completely untouched per user directive.
+- Added `products`, `orders`, and `order_items` tables with integer paise pricing, foreign key integrity, and merchant scoping. Cleaned up in `resetDemo` and exported in `exportArchive`.
+- Implemented `server/inventory.js` domain logic: CRUD product catalog with 8 default Kirana seed items, Hinglish/Hindi quantity & item order text parser, atomic order creation, merchant accept & bill generation (with stock decrement), merchant rejection with audit record, and customer payment reconciliation.
+- Connected customer payment decision: Paid (Cash/UPI) adds `sale` entry to ledger and updates cash balance; Unpaid (Udhaar) collects customer name and promise date, records `udhaar` entry, registers in `due_terms` and reminder follow-up queue, keeping cash uninflated.
+- Added UI components: `src/components/Inventory.jsx` (catalog management, stock adjustment, add/edit items) and `src/components/OrderModal.jsx` (complete 9-step customer order flow: input -> AI parse -> review details -> accept/reject -> bill generation -> paid vs udhaar with promise date -> shareable WhatsApp bill text).
+- Added '+ Naya Order / Bill' and 'Inventory / Samaan' buttons to Home quick actions and Profile settings; added recent bills list on Home.
+- Added 6 integration and unit tests in `tests/orders.test.js`. All 60 tests and production Vite build pass.
+
+
+
+2026-10-31 — Selective reminders: customer checkboxes/select all in dues, scoped proposal creation, per-recipient checkboxes beside message drafts, empty selection blocks approval. Server validates approved subset, binds selected balances/content, persists approved recipients and enforces replay/merchant isolation. Browser verified Priya-only draft and disabled approval after deselection. No reminders sent; delivery remains simulation pending WhatsApp setup. 61 tests/build passed including selection/replay/stale-balance coverage. Owner preference: keep implementation small, focused and reuse existing flows; avoid unnecessary code.
+
+
+2026-10-31 — Refined reminder checkboxes to 18x18 px native emerald controls; aligned select-all and recipient labels with comfortable 44px label height and keyboard focus. Browser measured 18x18; build passed. Owner confirmed only WhatsApp Business mobile app exists (no Cloud API onboarding). Actual automated reminder delivery remains unconfigured; a phone number alone is not an API integration.
+
+
+2026-10-31 — WhatsApp Web manual handoff implemented in reminder review: selected recipient phone input -> server-validated draft URL -> explicit Open WhatsApp Web link. Server checks merchant/recipient, proposal expiry/status and current unpaid snapshot; validates international number (10-digit Indian mobile normalizes to 91). No QR session capture, automatic send, delivery assertion, ledger changes or persistent contact storage. User presses Send in their own WhatsApp Web account. Removed simulation approval button from this review flow. Browser tested URL generation with temporary QA number then cleared it; no external chat opened and no message sent. 62 tests/build passed, including cross-merchant, invalid phone, expiry and no-sent-state coverage.

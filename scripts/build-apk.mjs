@@ -12,10 +12,12 @@ import { resolve, join, dirname } from "node:path";
 import { randomBytes } from "node:crypto";
 const root = resolve(dirname(import.meta.filename), "..");
 const probe = process.argv.includes("--compile-check");
-const raw = probe ? "https://example.invalid" : process.env.MUNIM_ANDROID_URL;
+const raw = probe
+  ? "https://example.invalid"
+  : process.env.ZUNO_ANDROID_URL || process.env.MUNIM_ANDROID_URL;
 if (!raw)
   throw new Error(
-    "Set MUNIM_ANDROID_URL to the verified online HTTPS origin before building a shareable APK.",
+    "Set ZUNO_ANDROID_URL to the verified online HTTPS origin before building a shareable APK.",
   );
 const url = new URL(raw);
 if (
@@ -25,7 +27,7 @@ if (
   url.password
 )
   throw new Error(
-    "MUNIM_ANDROID_URL must be an exact HTTPS origin, without a path.",
+    "ZUNO_ANDROID_URL must be an exact HTTPS origin, without a path.",
   );
 if (!probe) {
   const response = await fetch(raw + "/api/health", {
@@ -101,8 +103,8 @@ run(join(jdk, "bin/javac"), [
   jar,
   "-d",
   classes,
-  join(source, "java/in/munim/demo/MainActivity.java"),
-  join(out, "generated-src/in/munim/demo/R.java"),
+  join(source, "java/in/zuno/demo/MainActivity.java"),
+  join(out, "generated-src/in/zuno/demo/R.java"),
 ]);
 const findClasses = (p) =>
   readdirSync(p, { withFileTypes: true }).flatMap((x) =>
@@ -151,7 +153,7 @@ if (!existsSync(store)) {
     "-keypass:file",
     pass,
     "-alias",
-    "munim-test",
+    "zuno-test",
     "-keyalg",
     "RSA",
     "-keysize",
@@ -159,14 +161,14 @@ if (!existsSync(store)) {
     "-validity",
     "3650",
     "-dname",
-    "CN=Munim Test, OU=Demo, O=Team Paradox, C=IN",
+    "CN=Zuno Test, OU=Demo, O=Team Paradox, C=IN",
     "-noprompt",
   ]);
   chmodSync(store, 0o600);
 }
 if (!existsSync(pass))
   throw new Error("Signing password file is missing; restore it privately.");
-const apk = join(out, probe ? "compile-check.apk" : "Munim-Test.apk");
+const apk = join(out, probe ? "compile-check.apk" : "Zuno-Test.apk");
 run(join(bt, "apksigner"), [
   "sign",
   "--ks",
@@ -174,7 +176,7 @@ run(join(bt, "apksigner"), [
   "--ks-pass",
   "file:" + pass,
   "--ks-key-alias",
-  "munim-test",
+  "zuno-test",
   "--out",
   apk,
   join(out, "aligned.apk"),

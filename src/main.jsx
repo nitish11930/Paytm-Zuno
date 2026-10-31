@@ -16,6 +16,8 @@ import PaymentImport from "./components/PaymentImport";
 import LoanReadiness from "./components/LoanReadiness";
 import EntryForm from "./components/EntryForm";
 import Voice from "./components/Voice";
+import { InventoryModal } from "./components/Inventory";
+import { OrderModal } from "./components/OrderModal";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { createRoot } from "react-dom/client";
 import {
@@ -48,6 +50,7 @@ import {
   RefreshCw,
   TriangleAlert,
   Receipt,
+  Boxes,
   Send,
   Globe,
   LoaderCircle,
@@ -65,6 +68,11 @@ import "@fontsource/noto-sans-devanagari/400.css";
 import "@fontsource/noto-sans-devanagari/600.css";
 import "./styles.css";
 const errors = {
+  INVALID_PHONE: [
+    "Enter a valid customer number with country code.",
+    "ग्राहक का सही नंबर देश कोड के साथ भरें।",
+    "Customer ka sahi number country code ke saath bharein.",
+  ],
   IMPORT_FILE_LIMIT: [
     "CSV must be at most 128 KB.",
     "CSV अधिकतम 128 KB हो।",
@@ -338,7 +346,9 @@ const icons = {
 };
 function App() {
   const [lang, setLang] = useState(() => {
-    const value = localStorage.getItem("munim-language");
+    const value =
+      localStorage.getItem("zuno-language") ||
+      localStorage.getItem("munim-language");
     return ["english", "hindi", "hinglish"].includes(value)
       ? value
       : "hinglish";
@@ -356,7 +366,8 @@ function App() {
     [scenario, setScenario] = useState("expected"),
     [online, setOnline] = useState(navigator.onLine),
     [hidden, setHidden] = useState(false),
-    [collectPercent, setCollectPercent] = useState(50);
+    [collectPercent, setCollectPercent] = useState(50),
+    [reminderSelection, setReminderSelection] = useState([]);
   const spokenAudio = useRef(null);
   useEffect(
     () => () => {
@@ -402,7 +413,7 @@ function App() {
     };
   }, [refresh]);
   useEffect(() => {
-    localStorage.setItem("munim-language", lang);
+    localStorage.setItem("zuno-language", lang);
     document.documentElement.lang = lang === "hindi" ? "hi" : "en";
   }, [lang]);
   useEffect(() => {
@@ -442,10 +453,16 @@ function App() {
     setError("");
     window.scrollTo({ top: 0, behavior: "instant" });
   };
-  const pendingKey = state ? "munim-pending-entry-" + state.merchant.id : "";
+  const pendingKey = state ? "zuno-pending-entry-" + state.merchant.id : "";
+  const legacyPendingKey = state
+    ? "munim-pending-entry-" + state.merchant.id
+    : "";
   const readPending = () => {
     try {
-      return JSON.parse(localStorage.getItem(pendingKey) || "null");
+      const stored =
+        localStorage.getItem(pendingKey) ||
+        (legacyPendingKey ? localStorage.getItem(legacyPendingKey) : null);
+      return JSON.parse(stored || "null");
     } catch {
       return null;
     }
@@ -459,11 +476,14 @@ function App() {
         : initial,
     });
   };
-  async function prepare() {
+  async function prepare(customerIds) {
     await run(async () =>
       setModal({
         type: "approval",
-        proposal: await api("/actions/propose", { method: "POST", body: {} }),
+        proposal: await api("/actions/propose", {
+          method: "POST",
+          body: Array.isArray(customerIds) ? { customerIds } : {},
+        }),
       }),
     );
   }
@@ -889,6 +909,8 @@ function App() {
               <div className="quick-actions">
                 {[
                   [Plus, "entry", () => openEntry()],
+                  [Receipt, "newOrder", () => setModal({ type: "order" })],
+                  [Boxes, "inventory", () => setModal({ type: "inventory" })],
                   [BookOpen, "dues", () => navigate("dues")],
                   [ChartNoAxesCombined, "cashPlan", () => navigate("plan")],
                   [LayoutGrid, "all", () => setModal({ type: "services" })],
@@ -955,6 +977,73 @@ function App() {
                 onAction={() => navigate("khata")}
               />
               <EntryRows entries={state.entries.slice(0, 3)} />
+              {state.orders && state.orders.length > 0 && (
+                <div style={{ marginTop: 14 }}>
+                  <Section title={t("recentBills")} />
+                  <div
+                    style={{ display: "flex", flexDirection: "column", gap: 8 }}
+                  >
+                    {state.orders.slice(0, 3).map((ord) => (
+                      <div
+                        key={ord.id}
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          padding: "10px 14px",
+                          background: "#fafcfb",
+                          border: "1px solid #dce8e2",
+                          borderRadius: 12,
+                          fontSize: 13,
+                        }}
+                      >
+                        <div>
+                          <strong>{ord.bill_number || "Order"}</strong>
+                          <div
+                            style={{
+                              fontSize: 11,
+                              color: "#627e74",
+                              marginTop: 2,
+                            }}
+                          >
+                            {ord.customer_name} · {ord.items?.length || 0} items
+                          </div>
+                        </div>
+                        <div style={{ textAlign: "right" }}>
+                          <strong style={{ color: "#007a55" }}>
+                            {money(ord.total_amount)}
+                          </strong>
+                          <div style={{ marginTop: 2 }}>
+                            <span
+                              style={{
+                                fontSize: 10,
+                                fontWeight: 700,
+                                padding: "2px 6px",
+                                borderRadius: 6,
+                                background:
+                                  ord.payment_status === "paid"
+                                    ? "#d1fae5"
+                                    : ord.status === "rejected"
+                                      ? "#fee2e2"
+                                      : "#fef3c7",
+                                color:
+                                  ord.payment_status === "paid"
+                                    ? "#065f46"
+                                    : ord.status === "rejected"
+                                      ? "#991b1b"
+                                      : "#92400e",
+                              }}
+                            >
+                              {ord.payment_status?.toUpperCase() ||
+                                ord.status?.toUpperCase()}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div className="quiet-reminder">
                 <Send size={18} />
                 <span>{t("ready")}</span>
@@ -998,6 +1087,26 @@ function App() {
                 amount={money(state.pending)}
                 back={() => navigate("khata")}
               />
+              <label className="notice reminder-select-all">
+                <input
+                  type="checkbox"
+                  checked={
+                    state.dues.length > 0 &&
+                    state.dues.every((d) =>
+                      reminderSelection.includes(d.customerId),
+                    )
+                  }
+                  disabled={!state.dues.length}
+                  onChange={(e) =>
+                    setReminderSelection(
+                      e.target.checked
+                        ? [...new Set(state.dues.map((d) => d.customerId))]
+                        : [],
+                    )
+                  }
+                />
+                {t("selectAllReminders")}
+              </label>
               {state.customers.some((c) => c.legacy) && (
                 <p className="notice">{t("legacyCustomers")}</p>
               )}
@@ -1007,6 +1116,18 @@ function App() {
                 state.dues.map((d) => (
                   <div className="due-card" key={d.id}>
                     <div className="due-heading">
+                      <input
+                        type="checkbox"
+                        aria-label={`${t("selectReminder")} ${d.name}`}
+                        checked={reminderSelection.includes(d.customerId)}
+                        onChange={(e) =>
+                          setReminderSelection((ids) =>
+                            e.target.checked
+                              ? [...new Set([...ids, d.customerId])]
+                              : ids.filter((id) => id !== d.customerId),
+                          )
+                        }
+                      />
                       <span className="customer-avatar">
                         {d.name.charAt(0)}
                       </span>
@@ -1036,8 +1157,22 @@ function App() {
               )}
               <button
                 className="primary"
-                disabled={busy || !online || !state.dues.length}
-                onClick={prepare}
+                disabled={
+                  busy ||
+                  !online ||
+                  !state.dues.some((d) =>
+                    reminderSelection.includes(d.customerId),
+                  )
+                }
+                onClick={() =>
+                  prepare([
+                    ...new Set(
+                      state.dues
+                        .filter((d) => reminderSelection.includes(d.customerId))
+                        .map((d) => d.customerId),
+                    ),
+                  ])
+                }
               >
                 <Send size={18} />
                 {t("reminder")}
@@ -1278,6 +1413,7 @@ function App() {
               <div className="settings-list">
                 {[
                   [Store, "shop", () => setModal({ type: "shop" })],
+                  [Boxes, "inventory", () => setModal({ type: "inventory" })],
                   [Leaf, "readiness", () => navigate("readiness")],
                   [
                     ShieldCheck,
@@ -1400,7 +1536,7 @@ function App() {
               </section>
             )}
           <footer className="app-footer">
-            <Leaf size={13} /> Munim · {t("demoOnly")}
+            <Leaf size={13} /> Zuno · {t("demoOnly")}
           </footer>
         </main>
         <nav className="bottom-nav" aria-label="Main navigation">
@@ -1428,7 +1564,43 @@ function App() {
           {toast}
         </div>
       )}
-      {modal && (
+      {modal?.type === "order" && (
+        <OrderModal
+          catalog={state.products || []}
+          customers={state.customers || []}
+          language={lang}
+          t={t}
+          onClose={() => setModal(null)}
+          onSuccess={() => {
+            refresh().catch(() => {});
+            setToast(t("billGenerated"));
+          }}
+        />
+      )}
+      {modal?.type === "inventory" && (
+        <InventoryModal
+          products={state.products || []}
+          language={lang}
+          t={t}
+          onClose={() => setModal(null)}
+          onAddProduct={async (p) => {
+            await api("/products", { method: "POST", body: p });
+            await refresh();
+            setToast("Product added!");
+          }}
+          onUpdateProduct={async (id, p) => {
+            await api(`/products/${id}`, { method: "PUT", body: p });
+            await refresh();
+            setToast("Product updated!");
+          }}
+          onDeleteProduct={async (id) => {
+            await api(`/products/${id}`, { method: "DELETE" });
+            await refresh();
+            setToast("Product removed!");
+          }}
+        />
+      )}
+      {modal && modal.type !== "order" && modal.type !== "inventory" && (
         <Modal
           title={
             modal.type === "recovery"
@@ -1466,7 +1638,7 @@ function App() {
           closeLabel={t("cancel")}
           busy={busy}
         >
-          {errorBox}
+          {modal.type !== "voice" && errorBox}
           {modal.type === "recovery" && (
             <>
               <p className="notice warn">{t("recoveryHint")}</p>
@@ -1541,9 +1713,14 @@ function App() {
                   try {
                     await api("/entries", { method: "POST", body: v });
                     localStorage.removeItem(pendingKey);
+                    if (legacyPendingKey)
+                      localStorage.removeItem(legacyPendingKey);
                   } catch (e) {
-                    if (e.status && e.status < 500 && e.status !== 429)
+                    if (e.status && e.status < 500 && e.status !== 429) {
                       localStorage.removeItem(pendingKey);
+                      if (legacyPendingKey)
+                        localStorage.removeItem(legacyPendingKey);
+                    }
                     throw e;
                   }
                   setModal(null);
@@ -1597,19 +1774,102 @@ function App() {
           )}
           {modal.type === "approval" && (
             <>
-              <span className="badge warn">{t("simulated")}</span>
-              <p>{t("approvalNote")}</p>
+              <span className="badge">{t("whatsappManual")}</span>
+              <p>{t("whatsappWebHint")}</p>
               <div className="approval-recipients">
                 {modal.proposal.payload.map((p) => (
                   <div key={p.id}>
-                    <span title={p.customerId}>
-                      {p.name}
-                      <small className="account-id">
-                        {p.customerId?.slice(0, 6)}
-                      </small>
-                    </span>
+                    <label className="reminder-recipient">
+                      <input
+                        type="checkbox"
+                        checked={!modal.excluded?.includes(p.customerId)}
+                        disabled={busy}
+                        onChange={(e) =>
+                          setModal((m) => ({
+                            ...m,
+                            excluded: e.target.checked
+                              ? (m.excluded || []).filter(
+                                  (id) => id !== p.customerId,
+                                )
+                              : [...(m.excluded || []), p.customerId],
+                          }))
+                        }
+                      />
+                      <span title={p.customerId}>
+                        {p.name}
+                        <small className="account-id">
+                          {p.customerId?.slice(0, 6)}
+                        </small>
+                      </span>
+                    </label>
                     <strong>{money(p.amount)}</strong>
                     <p className="reminder-draft">{p.message}</p>
+                    <div className="whatsapp-draft-controls">
+                      <label>
+                        {t("customerWhatsAppNumber")}
+                        <input
+                          type="tel"
+                          inputMode="tel"
+                          maxLength={30}
+                          placeholder="+91 …"
+                          disabled={
+                            busy || modal.excluded?.includes(p.customerId)
+                          }
+                          value={modal.phones?.[p.customerId] || ""}
+                          onChange={(e) =>
+                            setModal((m) => ({
+                              ...m,
+                              phones: {
+                                ...m.phones,
+                                [p.customerId]: e.target.value,
+                              },
+                              links: { ...m.links, [p.customerId]: null },
+                            }))
+                          }
+                        />
+                      </label>
+                      <button
+                        className="secondary"
+                        disabled={
+                          busy ||
+                          !online ||
+                          modal.excluded?.includes(p.customerId) ||
+                          !modal.phones?.[p.customerId]?.trim()
+                        }
+                        onClick={() =>
+                          run(async () => {
+                            const result = await api(
+                              `/actions/${modal.proposal.id}/whatsapp-draft`,
+                              {
+                                method: "POST",
+                                body: {
+                                  customerId: p.customerId,
+                                  phone: modal.phones[p.customerId],
+                                },
+                              },
+                            );
+                            setModal((m) => ({
+                              ...m,
+                              links: { ...m.links, [p.customerId]: result.url },
+                            }));
+                          })
+                        }
+                      >
+                        {t("prepareWhatsAppDraft")}
+                      </button>
+                      {modal.links?.[p.customerId] &&
+                        !modal.excluded?.includes(p.customerId) && (
+                          <a
+                            className="primary whatsapp-draft-link"
+                            href={modal.links[p.customerId]}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            referrerPolicy="no-referrer"
+                          >
+                            {t("openWhatsAppWeb")}
+                          </a>
+                        )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1617,32 +1877,16 @@ function App() {
                 className="secondary"
                 disabled={!health.voiceConfigured || busy}
                 onClick={() =>
-                  speak(modal.proposal.payload.map((p) => p.message).join("\n"))
+                  speak(
+                    modal.proposal.payload
+                      .filter((p) => !modal.excluded?.includes(p.customerId))
+                      .map((p) => p.message)
+                      .join("\n"),
+                  )
                 }
               >
                 <Volume2 size={18} />
                 {t("hear")}
-              </button>
-              <button
-                className="primary"
-                disabled={busy || !online}
-                onClick={() =>
-                  run(async () => {
-                    const result = await api(
-                      "/actions/" + modal.proposal.id + "/decision",
-                      { method: "POST", body: { approve: true } },
-                    );
-                    await refresh();
-                    setModal({ type: "result", result });
-                  })
-                }
-              >
-                {busy ? (
-                  <LoaderCircle className="spin" size={18} />
-                ) : (
-                  <Check size={18} />
-                )}{" "}
-                {t("approve")}
               </button>
               <button
                 className="text-button centered"
@@ -1748,6 +1992,8 @@ function App() {
             <div className="services-grid">
               {[
                 [Plus, "entry", () => openEntry()],
+                [Receipt, "newOrder", () => setModal({ type: "order" })],
+                [Boxes, "inventory", () => setModal({ type: "inventory" })],
                 [
                   BookOpen,
                   "dues",

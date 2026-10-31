@@ -14,6 +14,15 @@ spec.loader.exec_module(worker)
 
 
 class VoiceStorageTests(unittest.TestCase):
+    def test_edge_silence_trim_preserves_speech_and_internal_pauses(self):
+        speech = np.full(16000, 0.05, dtype=np.float32)
+        pause = np.zeros(16000, dtype=np.float32)
+        audio = np.concatenate([pause, speech, pause, speech, pause])
+        trimmed = worker.speech_window(audio)
+        np.testing.assert_array_equal(trimmed, audio[14400:65600])
+        with self.assertRaisesRegex(ValueError, "VOICE_SAMPLE_TOO_QUIET"):
+            worker.speech_window(np.array([float("nan")] * 16000))
+
     def test_real_decoder_rejects_short_and_silent_audio(self):
         def silence(seconds):
             output=io.BytesIO()

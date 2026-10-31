@@ -1,47 +1,45 @@
-import {
-  importColumns,
-  previewImport,
-  confirmImport,
-  classifyPayment,
-} from "./payment-import.js";
+import { importColumns } from "./payment-import.js";
 import express from "express";
-import { ownerVoice } from "./owner-voice.js";
-import {
-  initializeVoiceLedger,
-  voiceLedgerTurn,
-  currentVoiceLedger,
-} from "./voice-ledger.js";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import { rateLimit } from "express-rate-limit";
 import multer from "multer";
 import { z } from "zod";
 import { randomBytes, createHash, timingSafeEqual } from "node:crypto";
-import {
-  database,
-  exportArchive,
-  seed,
-  snapshot,
-  addEntry,
-  propose,
-  execute,
-  updateShop,
-  resetDemo,
-  reverseEntry,
-  DomainError,
-  validDueDate,
-  followUpQueue,
-} from "./domain.js";
+import { database, DomainError, validDueDate } from "./domain.js";
 import { transcribe, speak } from "./voice.js";
-import { assistantAnswer } from "./advisor.js";
-import { addSchedule, changeSchedule } from "./planning.js";
+import { initializeVoiceLedger } from "./voice-ledger.js";
+import { createSqliteRepository } from "./sqlite-adapter.js";
+import { createPostgresPool, createPostgresRepository } from "./postgres.js";
+
 const hash = (s) => createHash("sha256").update(s).digest("hex");
+const sessionCookie = (req) => req.cookies?.zuno || req.cookies?.munim || "";
+const deviceCookie = (req) =>
+  req.cookies?.zuno_device || req.cookies?.munim_device || "";
 const lang = z.enum(["english", "hindi", "hinglish"]);
-export function createApp(
-  db = database(),
-  { ownerVerifier = ownerVoice } = {},
-) {
-  initializeVoiceLedger(db);
+
+export function createApp(dbOrRepo) {
+  let repo;
+  if (
+    dbOrRepo &&
+    (dbOrRepo.provider === "postgres" || dbOrRepo.provider === "sqlite")
+  ) {
+    repo = dbOrRepo;
+  } else if (dbOrRepo && typeof dbOrRepo.prepare === "function") {
+    initializeVoiceLedger(dbOrRepo);
+    repo = createSqliteRepository(dbOrRepo);
+  } else if (
+    process.env.DB_PROVIDER === "postgres" ||
+    (process.env.SUPABASE_DB_URL && process.env.NODE_ENV !== "test")
+  ) {
+    const pool = createPostgresPool();
+    repo = createPostgresRepository(pool);
+  } else {
+    const db = database();
+    initializeVoiceLedger(db);
+    repo = createSqliteRepository(db);
+  }
+
   const app = express();
   const allowedOrigins = new Set([
     `http://127.0.0.1:${process.env.PORT || 5187}`,
@@ -115,6 +113,7 @@ export function createApp(
     }
     next();
   });
+
   app.get("/api/health", (_q, r) =>
     r.json({
       ok: true,
@@ -122,8 +121,10 @@ export function createApp(
       mode:
         process.env.NODE_ENV === "production" ? "online-test" : "local-demo",
       testAccessRequired: !!process.env.TEST_ACCESS_CODE,
+      databaseProvider: repo.provider,
     }),
   );
+
   app.post(
     "/api/auth/login",
     rateLimit({
@@ -131,7 +132,7 @@ export function createApp(
       limit: 10,
       message: { error: "RATE_LIMITED" },
     }),
-    (req, res) => {
+    async (req, res) => {
       if (process.env.TEST_ACCESS_CODE) {
         const value = z.string().max(200).safeParse(req.body.testAccessCode);
         const digest = (s) => createHash("sha256").update(s).digest();
@@ -155,35 +156,35 @@ export function createApp(
         .safeParse(req.body);
       if (!data.success)
         return res.status(401).json({ error: "INVALID_DEMO_CREDENTIALS" });
-      // Every fresh browser session receives its own isolated synthetic merchant.
+
       let m;
-      const existing = db
-        .prepare("SELECT merchant FROM sessions WHERE hash=? AND expires>?")
-        .get(hash(req.cookies.munim || ""), Date.now());
-      const device = db
-        .prepare("SELECT merchant FROM demo_devices WHERE hash=? AND expires>?")
-        .get(hash(req.cookies.munim_device || ""), Date.now());
+      const existing = await repo.getMerchantBySession(
+        hash(sessionCookie(req)),
+      );
+      const device = await repo.getMerchantByDevice(hash(deviceCookie(req)));
+
       if (data.data.recoveryKey) {
-        const access = db
-          .prepare("SELECT merchant FROM workspace_access WHERE hash=?")
-          .get(hash(data.data.recoveryKey));
-        if (!access)
+        const merchant = await repo.getMerchantByRecoveryKey(
+          hash(data.data.recoveryKey),
+        );
+        if (!merchant)
           return res.status(401).json({ error: "INVALID_ACCESS_KEY" });
-        m = access.merchant;
-      } else if (existing) m = existing.merchant;
-      else if (device) m = device.merchant;
+        m = merchant;
+      } else if (existing) m = existing;
+      else if (device) m = device;
       else {
         m = randomBytes(16).toString("hex");
-        seed(db, m);
+        await repo.seed(m);
       }
-      if (!device || device.merchant !== m) {
+
+      if (!device || device !== m) {
         const deviceToken = randomBytes(32).toString("hex");
-        db.prepare("INSERT INTO demo_devices VALUES(?,?,?)").run(
+        await repo.createDemoDevice(
           hash(deviceToken),
           m,
           Date.now() + 30 * 86400000,
         );
-        res.cookie("munim_device", deviceToken, {
+        res.cookie("zuno_device", deviceToken, {
           httpOnly: true,
           sameSite: "strict",
           secure: process.env.NODE_ENV === "production",
@@ -191,13 +192,10 @@ export function createApp(
           path: "/",
         });
       }
+
       const token = randomBytes(32).toString("hex");
-      db.prepare("INSERT INTO sessions VALUES(?,?,?)").run(
-        hash(token),
-        m,
-        Date.now() + 86400000,
-      );
-      res.cookie("munim", token, {
+      await repo.createSession(hash(token), m, Date.now() + 86400000);
+      res.cookie("zuno", token, {
         httpOnly: true,
         sameSite: "strict",
         secure: process.env.NODE_ENV === "production",
@@ -207,23 +205,20 @@ export function createApp(
       res.json({ ok: true });
     },
   );
-  app.use("/api", (req, res, next) => {
-    const s = db
-      .prepare("SELECT merchant FROM sessions WHERE hash=? AND expires>?")
-      .get(hash(req.cookies.munim || ""), Date.now());
-    if (!s) return res.status(401).json({ error: "AUTH_REQUIRED" });
-    req.merchant = s.merchant;
-    const device = db
-      .prepare("SELECT merchant FROM demo_devices WHERE hash=? AND expires>?")
-      .get(hash(req.cookies.munim_device || ""), Date.now());
-    if (!device || device.merchant !== s.merchant) {
+
+  app.use("/api", async (req, res, next) => {
+    const merchant = await repo.getMerchantBySession(hash(sessionCookie(req)));
+    if (!merchant) return res.status(401).json({ error: "AUTH_REQUIRED" });
+    req.merchant = merchant;
+    const device = await repo.getMerchantByDevice(hash(deviceCookie(req)));
+    if (!device || device !== req.merchant) {
       const token = randomBytes(32).toString("hex");
-      db.prepare("INSERT INTO demo_devices VALUES(?,?,?)").run(
+      await repo.createDemoDevice(
         hash(token),
-        s.merchant,
+        req.merchant,
         Date.now() + 30 * 86400000,
       );
-      res.cookie("munim_device", token, {
+      res.cookie("zuno_device", token, {
         httpOnly: true,
         sameSite: "strict",
         secure: process.env.NODE_ENV === "production",
@@ -233,38 +228,33 @@ export function createApp(
     }
     next();
   });
-  app.get("/api/state", (q, r) =>
+
+  app.get("/api/state", async (q, r) =>
     r.json(
-      snapshot(
-        db,
+      await repo.snapshot(
         q.merchant,
         q.query.scenario === "conservative" ? "conservative" : "expected",
       ),
     ),
   );
-  app.post("/api/auth/logout", (q, r) => {
-    db.prepare("DELETE FROM sessions WHERE hash=?").run(hash(q.cookies.munim));
-    db.prepare("DELETE FROM demo_devices WHERE hash=?").run(
-      hash(q.cookies.munim_device || ""),
-    );
-    r.clearCookie("munim", { path: "/" })
+
+  app.post("/api/auth/logout", async (q, r) => {
+    await repo.deleteSession(hash(sessionCookie(q)));
+    await repo.deleteDemoDevice(hash(deviceCookie(q)));
+    r.clearCookie("zuno", { path: "/" })
+      .clearCookie("zuno_device", { path: "/" })
+      .clearCookie("munim", { path: "/" })
       .clearCookie("munim_device", { path: "/" })
       .json({ ok: true });
   });
-  app.post("/api/auth/recovery-key", (q, r) => {
+
+  app.post("/api/auth/recovery-key", async (q, r) => {
     const key = randomBytes(32).toString("hex");
-    db.transaction(() => {
-      db.prepare("DELETE FROM workspace_access WHERE merchant=?").run(
-        q.merchant,
-      );
-      db.prepare("INSERT INTO workspace_access VALUES(?,?)").run(
-        hash(key),
-        q.merchant,
-      );
-    })();
+    await repo.createRecoveryKey(q.merchant, hash(key));
     r.json({ key });
   });
-  app.patch("/api/shop", (q, r) => {
+
+  app.patch("/api/shop", async (q, r) => {
     const values = z
       .object({
         shop: z.string().trim().min(2).max(60),
@@ -272,10 +262,11 @@ export function createApp(
         language: lang,
       })
       .parse(q.body);
-    updateShop(db, q.merchant, values);
+    await repo.updateShop(q.merchant, values);
     r.json({ ok: true });
   });
-  app.post("/api/entries", (q, r) => {
+
+  app.post("/api/entries", async (q, r) => {
     const value = z
       .object({
         kind: z.enum(["sale", "expense", "udhaar", "collection", "receipt"]),
@@ -291,17 +282,21 @@ export function createApp(
         requestKey: z.string().uuid(),
       })
       .parse(q.body);
-    r.status(201).json(addEntry(db, q.merchant, value));
+    r.status(201).json(await repo.addEntry(q.merchant, value));
   });
-  app.post("/api/entries/:id/reverse", (q, r) => {
+
+  app.post("/api/entries/:id/reverse", async (q, r) => {
     const v = z
       .object({
         reason: z.string().trim().min(3).max(300),
         requestKey: z.string().uuid(),
       })
       .parse(q.body);
-    r.json(reverseEntry(db, q.merchant, q.params.id, v.reason, v.requestKey));
+    r.json(
+      await repo.reverseEntry(q.merchant, q.params.id, v.reason, v.requestKey),
+    );
   });
+
   const date = z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/)
@@ -314,7 +309,8 @@ export function createApp(
     amount: z.number().int().positive().max(100000000),
     date,
   };
-  app.post("/api/schedule", (q, r) => {
+
+  app.post("/api/schedule", async (q, r) => {
     const v = z
       .object({
         ...scheduleFields,
@@ -324,9 +320,10 @@ export function createApp(
         requestKey: z.string().uuid(),
       })
       .parse(q.body);
-    r.status(201).json(addSchedule(db, q.merchant, v));
+    r.status(201).json(await repo.addSchedule(q.merchant, v));
   });
-  app.patch("/api/schedule/:id", (q, r) => {
+
+  app.patch("/api/schedule/:id", async (q, r) => {
     const v = z
       .union([
         z.object({
@@ -336,9 +333,10 @@ export function createApp(
         z.object({ ...scheduleFields, version: z.number().int().positive() }),
       ])
       .parse(q.body);
-    r.json(changeSchedule(db, q.merchant, q.params.id, v));
+    r.json(await repo.changeSchedule(q.merchant, q.params.id, v));
   });
-  app.post("/api/payments/preview", (q, r) => {
+
+  app.post("/api/payments/preview", async (q, r) => {
     const v = z
       .object({
         csv: z.string().max(131072),
@@ -358,8 +356,7 @@ export function createApp(
       .parse(q.body);
     if (!v.mapping) return r.json(importColumns(v.csv));
     r.json(
-      previewImport(
-        db,
+      await repo.previewImport(
         q.merchant,
         v.csv,
         v.mapping,
@@ -368,10 +365,17 @@ export function createApp(
       ),
     );
   });
-  app.post("/api/payments/imports/:id/confirm", (q, r) =>
-    r.json(confirmImport(db, q.merchant, z.string().uuid().parse(q.params.id))),
+
+  app.post("/api/payments/imports/:id/confirm", async (q, r) =>
+    r.json(
+      await repo.confirmImport(
+        q.merchant,
+        z.string().uuid().parse(q.params.id),
+      ),
+    ),
   );
-  app.post("/api/payments/:id/classify", (q, r) => {
+
+  app.post("/api/payments/:id/classify", async (q, r) => {
     const v = z
       .discriminatedUnion("category", [
         z.object({ category: z.literal("link"), entryId: z.string().uuid() }),
@@ -389,23 +393,59 @@ export function createApp(
       ])
       .parse(q.body);
     r.json(
-      classifyPayment(db, q.merchant, z.string().uuid().parse(q.params.id), v),
+      await repo.classifyPayment(
+        q.merchant,
+        z.string().uuid().parse(q.params.id),
+        v,
+      ),
     );
   });
-  app.get("/api/follow-ups", (q, r) => r.json(followUpQueue(db, q.merchant)));
-  app.post("/api/actions/propose", (q, r) => {
+
+  app.get("/api/follow-ups", async (q, r) =>
+    r.json(await repo.followUpQueue(q.merchant)),
+  );
+
+  app.post("/api/actions/propose", async (q, r) => {
     const options = z
       .object({
         dueId: z.string().max(100).optional(),
+        customerIds: z
+          .array(z.string().min(1).max(100))
+          .min(1)
+          .max(200)
+          .optional(),
         unpaidConfirmed: z.boolean().optional(),
       })
       .parse(q.body || {});
-    r.status(201).json(propose(db, q.merchant, options));
+    r.status(201).json(await repo.propose(q.merchant, options));
   });
-  app.post("/api/actions/:id/decision", (q, r) => {
-    const { approve } = z.object({ approve: z.boolean() }).parse(q.body);
-    r.json(execute(db, q.merchant, q.params.id, approve));
+
+  app.post("/api/actions/:id/whatsapp-draft", async (q, r) => {
+    const { customerId, phone } = z
+      .object({
+        customerId: z.string().min(1).max(100),
+        phone: z.string().min(8).max(30),
+      })
+      .parse(q.body);
+    r.json(
+      await repo.whatsappDraft(q.merchant, q.params.id, customerId, phone),
+    );
   });
+
+  app.post("/api/actions/:id/decision", async (q, r) => {
+    const { approve, customerIds } = z
+      .object({
+        approve: z.boolean(),
+        customerIds: z
+          .array(z.string().min(1).max(100))
+          .min(1)
+          .max(200)
+          .optional(),
+      })
+      .parse(q.body);
+    r.json(await repo.execute(q.merchant, q.params.id, approve, customerIds));
+  });
+
   app.use(
     "/api/voice",
     rateLimit({
@@ -415,9 +455,11 @@ export function createApp(
       message: { error: "RATE_LIMITED" },
     }),
   );
-  app.get("/api/voice/ledger/current", (q, r) =>
-    r.json(currentVoiceLedger(db, q.merchant)),
+
+  app.get("/api/voice/ledger/current", async (q, r) =>
+    r.json(await repo.currentVoiceLedger(q.merchant)),
   );
+
   app.post("/api/voice/ledger", async (q, r) => {
     const input = z
       .object({
@@ -430,8 +472,9 @@ export function createApp(
       })
       .refine((v) => !!v.draftId === !!v.version)
       .parse(q.body);
-    r.json(await voiceLedgerTurn(db, q.merchant, input));
+    r.json(await repo.voiceLedgerTurn(q.merchant, input));
   });
+
   app.post("/api/voice/intent", async (q, r) => {
     const { text, language, previousTopic, scenario } = z
       .object({
@@ -454,8 +497,7 @@ export function createApp(
       })
       .parse(q.body);
     r.json(
-      await assistantAnswer(
-        db,
+      await repo.assistantAnswer(
         q.merchant,
         text,
         language,
@@ -464,22 +506,12 @@ export function createApp(
       ),
     );
   });
+
   const upload = multer({
     storage: multer.memoryStorage(),
     limits: { fileSize: 5 * 1024 * 1024, files: 1 },
   });
-  app.get("/api/voice/owner", async (q, r) =>
-    r.json(await ownerVerifier("status", q.merchant)),
-  );
-  app.post("/api/voice/owner/delete", async (q, r) => {
-    z.object({ confirm: z.literal(true) }).parse(q.body);
-    r.json(await ownerVerifier("delete", q.merchant));
-  });
-  app.post("/api/voice/owner/enroll", upload.single("audio"), async (q, r) => {
-    if (q.body.consent !== "true" || !q.file)
-      throw new DomainError("VOICE_CONSENT_REQUIRED");
-    r.json(await ownerVerifier("enroll", q.merchant, q.file.buffer));
-  });
+
   app.post("/api/voice/ledger/audio", upload.single("audio"), async (q, r) => {
     if (!q.file) throw new DomainError("AUDIO_REQUIRED");
     const input = z
@@ -496,30 +528,33 @@ export function createApp(
       .update(JSON.stringify(input))
       .update(q.file.buffer)
       .digest("hex");
-    const cached = db
-      .prepare(
-        "SELECT * FROM voice_audio_requests WHERE merchant=? AND request_key=?",
-      )
-      .get(q.merchant, input.requestKey);
+    const cached = await repo.getAudioRequest(q.merchant, input.requestKey);
     if (cached) {
       if (cached.input_hash !== inputHash)
         throw new DomainError("IDEMPOTENCY_CONFLICT", 409);
-      return r.json(JSON.parse(cached.result));
+      return r.json(
+        typeof cached.result === "string"
+          ? JSON.parse(cached.result)
+          : cached.result,
+      );
     }
-    await ownerVerifier("verify", q.merchant, q.file.buffer);
     const spoken = await transcribe(q.file, input.language);
     const result = {
-      ...(await voiceLedgerTurn(db, q.merchant, {
+      ...(await repo.voiceLedgerTurn(q.merchant, {
         ...input,
         text: spoken.transcript,
       })),
       transcript: spoken.transcript,
     };
-    db.prepare(
-      "INSERT OR IGNORE INTO voice_audio_requests VALUES(?,?,?,?)",
-    ).run(q.merchant, input.requestKey, inputHash, JSON.stringify(result));
+    await repo.saveAudioRequest(
+      q.merchant,
+      input.requestKey,
+      inputHash,
+      result,
+    );
     r.json(result);
   });
+
   app.post(
     "/api/voice/transcribe",
     rateLimit({
@@ -539,6 +574,7 @@ export function createApp(
       r.json(await transcribe(q.file, lang.parse(q.body.language)));
     },
   );
+
   app.post(
     "/api/voice/speak",
     rateLimit({
@@ -553,6 +589,7 @@ export function createApp(
       r.json(await speak(d.text, d.language));
     },
   );
+
   app.post("/api/loan/estimate", (q, r) => {
     const { amount, months, annualRate } = z
       .object({
@@ -578,16 +615,124 @@ export function createApp(
       illustrative: true,
     });
   });
-  app.get("/api/export", (q, r) =>
-    r.attachment("munim-demo-export.json").json(exportArchive(db, q.merchant)),
+
+  // Product Catalog
+  app.get("/api/products", async (q, r) => {
+    r.json({ products: await repo.listProducts(q.merchant) });
+  });
+
+  app.post("/api/products", async (q, r) => {
+    const data = z
+      .object({
+        name: z.string().trim().min(1).max(100),
+        unit: z.string().trim().max(30).optional(),
+        price: z.number().int().nonnegative().max(100000000),
+        stock: z.number().nonnegative().optional(),
+      })
+      .parse(q.body);
+    r.status(201).json({ product: await repo.addProduct(q.merchant, data) });
+  });
+
+  app.put("/api/products/:id", async (q, r) => {
+    const data = z
+      .object({
+        name: z.string().trim().min(1).max(100).optional(),
+        unit: z.string().trim().max(30).optional(),
+        price: z.number().int().nonnegative().max(100000000).optional(),
+        stock: z.number().nonnegative().optional(),
+        active: z.boolean().optional(),
+      })
+      .parse(q.body);
+    r.json({
+      product: await repo.updateProduct(q.merchant, q.params.id, data),
+    });
+  });
+
+  app.delete("/api/products/:id", async (q, r) => {
+    r.json(await repo.deleteProduct(q.merchant, q.params.id));
+  });
+
+  // Orders & Billing
+  app.post("/api/orders/parse", async (q, r) => {
+    const data = z
+      .object({ text: z.string().trim().min(1).max(500) })
+      .parse(q.body);
+    const catalog = await repo.listProducts(q.merchant);
+    r.json(repo.parseOrderText(data.text, catalog));
+  });
+
+  app.get("/api/orders", async (q, r) => {
+    const limit = Math.min(Number(q.query.limit) || 50, 100);
+    r.json({ orders: await repo.listOrders(q.merchant, limit) });
+  });
+
+  app.post("/api/orders", async (q, r) => {
+    const data = z
+      .object({
+        customerId: z.string().uuid().nullable().optional(),
+        customerName: z.string().trim().max(80).optional(),
+        items: z
+          .array(
+            z.object({
+              productId: z.string().uuid().nullable().optional(),
+              name: z.string().trim().min(1).max(100),
+              quantity: z.number().positive(),
+              unit: z.string().trim().max(30).optional(),
+              unitPrice: z.number().int().nonnegative(),
+            }),
+          )
+          .min(1),
+        source: z.enum(["manual", "voice"]).optional(),
+        requestKey: z.string().uuid(),
+      })
+      .parse(q.body);
+    r.status(201).json(await repo.createOrder(q.merchant, data));
+  });
+
+  app.post("/api/orders/:id/accept", async (q, r) => {
+    r.json(await repo.acceptOrder(q.merchant, q.params.id));
+  });
+
+  app.post("/api/orders/:id/reject", async (q, r) => {
+    const data = z
+      .object({
+        reason: z.string().trim().max(200).optional(),
+      })
+      .parse(q.body);
+    r.json({ order: await repo.rejectOrder(q.merchant, q.params.id, data) });
+  });
+
+  app.post("/api/orders/:id/payment", async (q, r) => {
+    const data = z
+      .object({
+        paymentStatus: z.enum(["paid", "unpaid"]),
+        paymentMethod: z.enum(["cash", "upi"]).optional(),
+        promiseDate: z.string().refine(validDueDate).nullable().optional(),
+        customerId: z.string().uuid().nullable().optional(),
+        customerName: z.string().trim().max(80).optional(),
+        requestKey: z.string().uuid(),
+      })
+      .parse(q.body);
+    r.json(await repo.completeOrderPayment(q.merchant, q.params.id, data));
+  });
+
+  app.get("/api/export", async (q, r) =>
+    r
+      .attachment("zuno-demo-export.json")
+      .json(await repo.exportArchive(q.merchant)),
   );
-  app.post("/api/demo/reset", (q, r) => {
-    resetDemo(db, q.merchant);
-    r.clearCookie("munim", { path: "/" })
+
+  app.post("/api/demo/reset", async (q, r) => {
+    await repo.resetDemo(q.merchant);
+    r.clearCookie("zuno", { path: "/" })
+      .clearCookie("zuno_device", { path: "/" })
+      .clearCookie("munim", { path: "/" })
       .clearCookie("munim_device", { path: "/" })
       .json({ ok: true });
   });
+
   app.use("/api", (_q, r) => r.status(404).json({ error: "NOT_FOUND" }));
+
   app.use((err, _q, res, _next) => {
     const status =
       err instanceof z.ZodError
@@ -604,5 +749,6 @@ export function createApp(
             : err.message,
     });
   });
+
   return app;
 }

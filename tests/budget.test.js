@@ -4,7 +4,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 test("provider daily call budget persists across module restarts and prevents an extra upstream call", async () => {
-  const dir = mkdtempSync(join(tmpdir(), "munim-budget-"));
+  const dir = mkdtempSync(join(tmpdir(), "zuno-budget-"));
   const old = {
     key: process.env.SARVAM_API_KEY,
     db: process.env.SARVAM_BUDGET_DB,

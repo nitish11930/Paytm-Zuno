@@ -222,3 +222,92 @@ test("dated dues queue tracks remaining amount, isolation, replay and closed due
   assert.equal(followUpQueue(db, "dated").length, 0);
   db.close();
 });
+
+test("selected reminders bind recipients, reject stale balances and replay safely", () => {
+  const db = database(":memory:");
+  seed(db, "selection");
+  try {
+    const all = propose(db, "selection");
+    const ids = all.payload.slice(0, 2).map((r) => r.customerId);
+    const p = propose(db, "selection", { customerIds: ids });
+    assert.equal(p.payload.length, 2);
+    const before = cash(db, "selection");
+    const result = execute(db, "selection", p.id, true, [ids[0]]);
+    assert.equal(result.payload.length, 1);
+    assert.equal(result.payload[0].customerId, ids[0]);
+    assert.equal(cash(db, "selection"), before);
+    assert.equal(execute(db, "selection", p.id, true, [ids[0]]).replayed, true);
+    assert.throws(() => execute(db, "selection", p.id, true, [ids[1]]));
+    assert.throws(() => propose(db, "selection", { customerIds: ["foreign"] }));
+    assert.throws(() => execute(db, "selection", all.id, true, []));
+    const fresh = propose(db, "selection", { customerIds: [ids[1]] });
+    const due = dues(db, "selection").find((d) => d.customerId === ids[1]);
+    addEntry(
+      db,
+      "selection",
+      input({ kind: "collection", dueId: due.id, amount: 100, name: due.name }),
+    );
+    assert.throws(
+      () => execute(db, "selection", fresh.id, true, [ids[1]]),
+      /PROPOSAL_CHANGED/,
+    );
+  } finally {
+    db.close();
+  }
+});
+
+test("WhatsApp Web draft validates recipient, expiry and current dues without marking sent", async () => {
+  const { whatsappDraft } = await import("../server/domain.js");
+  const db = database(":memory:");
+  seed(db, "web");
+  seed(db, "other-web");
+  try {
+    const proposal = propose(db, "web"),
+      row = proposal.payload[0];
+    const before = cash(db, "web");
+    const draft = whatsappDraft(
+      db,
+      "web",
+      proposal.id,
+      row.customerId,
+      "+91 98765 43210",
+    );
+    const url = new URL(draft.url);
+    assert.equal(url.origin, "https://web.whatsapp.com");
+    assert.equal(url.searchParams.get("phone"), "919876543210");
+    assert.equal(url.searchParams.get("text"), row.message);
+    assert.equal(draft.status, "draft_ready");
+    assert.equal(
+      db.prepare("SELECT status FROM proposals WHERE id=?").get(proposal.id)
+        .status,
+      "pending",
+    );
+    assert.equal(cash(db, "web"), before);
+    assert.throws(
+      () =>
+        whatsappDraft(
+          db,
+          "other-web",
+          proposal.id,
+          row.customerId,
+          "9876543210",
+        ),
+      /ACTION_NOT_FOUND/,
+    );
+    assert.throws(
+      () => whatsappDraft(db, "web", proposal.id, "unknown", "9876543210"),
+      /PROPOSAL_CHANGED/,
+    );
+    assert.throws(
+      () => whatsappDraft(db, "web", proposal.id, row.customerId, "123abc456"),
+      /INVALID_PHONE/,
+    );
+    db.prepare("UPDATE proposals SET expires=0 WHERE id=?").run(proposal.id);
+    assert.throws(
+      () => whatsappDraft(db, "web", proposal.id, row.customerId, "9876543210"),
+      /APPROVAL_EXPIRED/,
+    );
+  } finally {
+    db.close();
+  }
+});

@@ -20,9 +20,10 @@ COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/server ./server
 COPY --from=build /app/scripts ./scripts
+COPY deploy/supabase-ca.crt ./deploy/supabase-ca.crt
 RUN mkdir -p /app/data && chown -R node:node /app
-COPY deploy/docker-entrypoint.sh /usr/local/bin/munim-entrypoint
-RUN chmod 755 /usr/local/bin/munim-entrypoint
-ENTRYPOINT ["munim-entrypoint"]
+COPY deploy/docker-entrypoint.sh /usr/local/bin/zuno-entrypoint
+RUN chmod 755 /usr/local/bin/zuno-entrypoint
+ENTRYPOINT ["zuno-entrypoint"]
 EXPOSE 10000
 CMD ["node", "server/index.js"]

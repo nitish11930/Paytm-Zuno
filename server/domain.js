@@ -1,12 +1,17 @@
 import { day, cash, DomainError } from "./core.js";
 export { day, cash, DomainError } from "./core.js";
 import { planForecast, recommendations } from "./planning.js";
+import { initInventorySchema, listProducts, listOrders } from "./inventory.js";
 import { randomUUID } from "node:crypto";
 import Database from "better-sqlite3";
-import { mkdirSync, chmodSync } from "node:fs";
+import { mkdirSync, chmodSync, existsSync } from "node:fs";
 import { dirname } from "node:path";
 
-export function database(path = "data/munim.sqlite") {
+export function database(
+  path = existsSync("data/zuno.sqlite") || !existsSync("data/munim.sqlite")
+    ? "data/zuno.sqlite"
+    : "data/munim.sqlite",
+) {
   if (path !== ":memory:")
     mkdirSync(dirname(path), { recursive: true, mode: 0o700 });
   const db = new Database(path);
@@ -55,6 +60,7 @@ export function database(path = "data/munim.sqlite") {
   db.prepare(
     "UPDATE schedule SET kind='expense' WHERE direction='out' AND kind='sale'",
   ).run();
+  initInventorySchema(db);
   return db;
 }
 const log = (db, m, event, detail) =>
@@ -228,6 +234,8 @@ export function snapshot(db, m, scenario = "expected", complete = false) {
       expenses: entries.filter((e) => !e.reversed && e.kind === "expense")
         .length,
     },
+    products: listProducts(db, m),
+    orders: listOrders(db, m, 20),
   };
 }
 export function addEntry(db, m, input, options = {}) {
@@ -460,7 +468,18 @@ export function propose(db, m, options = {}) {
     if (item.status !== "payment_check_required")
       throw new DomainError("FOLLOW_UP_NOT_DUE", 409);
   }
-  const rows = reminderRows(db, m, options.dueId);
+  const allRows = reminderRows(db, m, options.dueId);
+  if (
+    options.customerIds &&
+    (!options.customerIds.length ||
+      options.customerIds.some(
+        (id) => !allRows.some((r) => r.customerId === id),
+      ))
+  )
+    throw new DomainError("NO_PENDING_DUES");
+  const rows = options.customerIds
+    ? allRows.filter((r) => options.customerIds.includes(r.customerId))
+    : allRows;
   if (!rows.length) throw new DomainError("NO_PENDING_DUES");
   const existing = db
     .prepare(
@@ -487,13 +506,51 @@ export function propose(db, m, options = {}) {
     });
   return { ...p, payload: rows };
 }
-export function execute(db, m, id, approve) {
+export function whatsappDraft(db, m, proposalId, customerId, phone) {
+  const p = db
+    .prepare("SELECT * FROM proposals WHERE id=? AND merchant=?")
+    .get(proposalId, m);
+  if (!p) throw new DomainError("ACTION_NOT_FOUND", 404);
+  if (p.status !== "pending" || p.expires < Date.now())
+    throw new DomainError("APPROVAL_EXPIRED", 409);
+  const row = JSON.parse(p.payload).find((r) => r.customerId === customerId);
+  if (!row) throw new DomainError("PROPOSAL_CHANGED", 409);
+  const current = reminderRows(db, m, row.scopeDueId).find(
+    (r) => r.customerId === customerId,
+  );
+  if (JSON.stringify(current) !== JSON.stringify(row))
+    throw new DomainError("PROPOSAL_CHANGED", 409);
+  let number = phone.trim().replace(/[+() .-]/g, "");
+  // A plain ten-digit Indian mobile number can omit +91.
+  if (/^[6-9]\d{9}$/.test(number)) number = "91" + number;
+  if (!/^[1-9]\d{7,14}$/.test(number)) throw new DomainError("INVALID_PHONE");
+  return {
+    url:
+      "https://web.whatsapp.com/send?" +
+      new URLSearchParams({ phone: number, text: row.message }),
+    status: "draft_ready",
+  };
+}
+export function execute(db, m, id, approve, customerIds) {
   return db.transaction(() => {
     const p = db
       .prepare("SELECT * FROM proposals WHERE id=? AND merchant=?")
       .get(id, m);
     if (!p) throw new DomainError("ACTION_NOT_FOUND", 404);
+    const original = JSON.parse(p.payload);
+    if (
+      customerIds &&
+      (!customerIds.length ||
+        new Set(customerIds).size !== customerIds.length ||
+        customerIds.some((key) => !original.some((r) => r.customerId === key)))
+    )
+      throw new DomainError("PROPOSAL_CHANGED", 409);
+    const recipients = customerIds
+      ? original.filter((r) => customerIds.includes(r.customerId))
+      : original;
     if (p.status !== "pending") {
+      if (customerIds && recipients.length !== original.length)
+        throw new DomainError("ACTION_ALREADY_DECIDED", 409);
       if (p.status !== (approve ? "simulated" : "rejected"))
         throw new DomainError("ACTION_ALREADY_DECIDED", 409);
       return { ...p, payload: JSON.parse(p.payload), replayed: true };
@@ -501,22 +558,23 @@ export function execute(db, m, id, approve) {
     if (p.expires < Date.now()) throw new DomainError("APPROVAL_EXPIRED", 409);
     if (approve) {
       const scoped = JSON.parse(p.payload)[0]?.scopeDueId;
-      const current = reminderRows(db, m, scoped);
-      if (JSON.stringify(current) !== p.payload)
+      const current = reminderRows(db, m, scoped).filter((r) =>
+        recipients.some((p) => p.customerId === r.customerId),
+      );
+      if (JSON.stringify(current) !== JSON.stringify(recipients))
         throw new DomainError("PROPOSAL_CHANGED", 409);
     }
     const status = approve ? "simulated" : "rejected";
-    db.prepare("UPDATE proposals SET status=? WHERE id=? AND merchant=?").run(
-      status,
-      id,
-      m,
-    );
+    const payload = JSON.stringify(approve ? recipients : original);
+    db.prepare(
+      "UPDATE proposals SET status=?,payload=? WHERE id=? AND merchant=?",
+    ).run(status, payload, id, m);
     log(db, m, approve ? "reminder_simulated" : "action_rejected", {
       proposal: id,
-      recipients: JSON.parse(p.payload),
+      recipients: JSON.parse(payload),
       moneyReceived: 0,
     });
-    return { ...p, status, payload: JSON.parse(p.payload) };
+    return { ...p, status, payload: JSON.parse(payload) };
   })();
 }
 export function updateShop(db, m, values) {
@@ -527,6 +585,11 @@ export function updateShop(db, m, values) {
 }
 export function resetDemo(db, m) {
   db.transaction(() => {
+    db.prepare(
+      "DELETE FROM order_items WHERE order_id IN (SELECT id FROM orders WHERE merchant=?)",
+    ).run(m);
+    db.prepare("DELETE FROM orders WHERE merchant=?").run(m);
+    db.prepare("DELETE FROM products WHERE merchant=?").run(m);
     db.prepare("DELETE FROM imported_payments WHERE merchant=?").run(m);
     db.prepare("DELETE FROM payment_import_batches WHERE merchant=?").run(m);
     db.prepare("DELETE FROM voice_audio_requests WHERE merchant=?").run(m);
@@ -627,6 +690,8 @@ export function exportArchive(db, m) {
     "voice_audio_requests",
     "payment_import_batches",
     "imported_payments",
+    "products",
+    "orders",
   ]) {
     tables[table] = db
       .prepare(
@@ -640,6 +705,11 @@ export function exportArchive(db, m) {
         `SELECT * FROM ${table} WHERE entry_id IN (SELECT id FROM entries WHERE merchant=?)`,
       )
       .all(m);
+  tables.order_items = db
+    .prepare(
+      "SELECT * FROM order_items WHERE order_id IN (SELECT id FROM orders WHERE merchant=?)",
+    )
+    .all(m);
   return {
     schemaVersion: 2,
     exportedAt: new Date().toISOString(),

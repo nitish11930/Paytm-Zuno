@@ -74,7 +74,7 @@ export function importColumns(csv) {
   }
   return { headers, suggested };
 }
-function rupees(value) {
+export function rupees(value) {
   if (
     !/^(?:\d+|\d{1,3}(?:,\d{3})+|\d{1,2}(?:,\d{2})*,\d{3})(?:\.\d{1,2})?$/.test(
       value,
@@ -90,7 +90,7 @@ function rupees(value) {
     throw new DomainError("IMPORT_INVALID_AMOUNT");
   return amount;
 }
-function exactDate(value, format) {
+export function exactDate(value, format) {
   if (format !== "iso") {
     const match =
       format === "dmySlash"
@@ -125,7 +125,7 @@ function exactDate(value, format) {
   }
   throw new DomainError("IMPORT_INVALID_DATE");
 }
-const same = (a, b) =>
+export const same = (a, b) =>
   a.record_type === b.record_type &&
   a.date === b.date &&
   a.amount === b.amount &&

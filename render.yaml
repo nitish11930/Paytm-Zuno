@@ -1,16 +1,11 @@
-# Proposed persistent test deployment. This file does not deploy or authorize a charge.
-# Confirm the provider's displayed service + disk price before applying.
+# Free demo deployment; business records use Supabase, local call-budget counter is ephemeral.
 services:
   - type: web
-    name: munim-friend-test
+    name: zuno-friend-test
     runtime: docker
-    plan: starter
+    plan: free
     healthCheckPath: /api/health
     autoDeployTrigger: off
-    disk:
-      name: munim-test-data
-      mountPath: /app/data
-      sizeGB: 1
     envVars:
       - key: NODE_ENV
         value: production
@@ -24,3 +19,9 @@ services:
         sync: false
       - key: SARVAM_DAILY_CALL_LIMIT
         value: 100
+      - key: DB_PROVIDER
+        value: postgres
+      - key: SUPABASE_DB_URL
+        sync: false
+      - key: SUPABASE_DB_CA_PATH
+        value: /app/deploy/supabase-ca.crt

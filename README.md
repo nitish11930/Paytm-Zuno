@@ -1,4 +1,4 @@
-# Munim
+# Zuno
 
 A mobile-first merchant companion, implemented from the supplied Stitch references. This is a local full-stack prototype with synthetic shop data, not an official Paytm product or a production financial service.
 
@@ -11,7 +11,7 @@ npm ci
 npm run dev
 ```
 
-Open http://127.0.0.1:5187. Port 5173 was already used by another local project, so Munim defaults to 5187. Change `PORT` in a local environment file if needed; origin validation follows that port.
+Open http://127.0.0.1:5187. Port 5173 was already used by another local project, so Zuno defaults to 5187. Change `PORT` in a local environment file if needed; origin validation follows that port.
 
 Demo mobile: **9876543210**. Demo PIN: **123456**. Each fresh browser gets an isolated synthetic shop. Sign-out revokes this device's resume access; the public demo PIN then opens a fresh shop. To reopen the same shop, first generate and privately save a workspace recovery key from Profile. Only the key's hash is stored; it can recover that workspace on another browser. This is private workspace access, not verified phone/OTP authentication. Do not enter real personal/financial data.
 

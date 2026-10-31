@@ -111,18 +111,18 @@ function question(db, m, draft, language) {
     return [
       "amount",
       choose(language, [
-        "What is the total amount in rupees? Say only the amount, not item quantities.",
-        "कुल कितने रुपये? केवल राशि बताएँ, सामान की गिनती नहीं।",
-        "Total kitne rupaye? Sirf amount batayein, item quantity nahi.",
+        "What is the total amount in rupees?",
+        "कुल कितने रुपये?",
+        "Total kitne rupaye?",
       ]),
     ];
   if (!draft.name?.trim())
     return [
       "name",
       choose(language, [
-        "Whose name should I record? For a counter sale, say Counter.",
-        "किसके नाम लिखूँ? काउंटर बिक्री के लिए काउंटर कहें।",
-        "Kiske naam likhun? Counter sale ke liye Counter bolein.",
+        "Whose name should I record?",
+        "किसके नाम लिखूँ?",
+        "Kiske naam likhun?",
       ]),
     ];
   const customers = db
@@ -174,9 +174,9 @@ function question(db, m, draft, language) {
     return [
       "promise",
       choose(language, [
-        "When did they promise to pay? Say, for example, in three days, or say no date.",
-        "कब देने का वादा किया? जैसे तीन दिन बाद कहें, या तारीख नहीं कहें।",
-        "Kab dene ka promise kiya? Jaise teen din baad bolein, ya date nahi bolein.",
+        "When will they repay the dues? Is a date agreed?",
+        "उधार कब लौटाएँगे? कोई तारीख तय है?",
+        "Udhaar kab lautayenge? Koi date tay hai?",
       ]),
     ];
   if (draft.kind !== "udhaar" && !draft.method)

@@ -104,31 +104,22 @@ test("missing fields are clarified, explicit completed method required, cancella
     if (old !== undefined) process.env.SARVAM_API_KEY = old;
   }
 });
-test("unmatched owner audio is blocked before Sarvam and no draft is created", async () => {
+test("tap-to-speak audio still requires an authenticated merchant", async () => {
   const db = database(":memory:");
-  const app = createApp(db, {
-    ownerVerifier: async () => {
-      const e = new Error("OWNER_VOICE_MISMATCH");
-      e.status = 403;
-      throw e;
-    },
-  });
-  const agent = request.agent(app);
-  await agent
-    .post("/api/auth/login")
-    .send({ phone: "9876543210", pin: "123456" })
-    .expect(200);
-  await agent
-    .post("/api/voice/ledger/audio")
-    .field("language", "hinglish")
-    .field("requestKey", randomUUID())
-    .attach("audio", Buffer.from("unverified"), {
-      filename: "sample.wav",
-      contentType: "audio/wav",
-    })
-    .expect(403);
-  assert.equal(db.prepare("SELECT COUNT(*) n FROM voice_drafts").get().n, 0);
-  db.close();
+  try {
+    await request(createApp(db))
+      .post("/api/voice/ledger/audio")
+      .field("language", "hinglish")
+      .field("requestKey", randomUUID())
+      .attach("audio", Buffer.from("sample"), {
+        filename: "sample.wav",
+        contentType: "audio/wav",
+      })
+      .expect(401);
+    assert.equal(db.prepare("SELECT COUNT(*) n FROM voice_drafts").get().n, 0);
+  } finally {
+    db.close();
+  }
 });
 
 test("cash sale requires final confirmation, expiry blocks saving and quantity replies stay unresolved", async () => {
@@ -269,8 +260,7 @@ test("audio route carries clarification through to a saved ledger entry and safe
     "teen din baad",
     "हाँ सेव कर दो",
   ];
-  let verified = 0,
-    stt = 0;
+  let stt = 0;
   global.fetch = async (url) => ({
     ok: true,
     json: async () =>
@@ -294,12 +284,7 @@ test("audio route carries clarification through to a saved ledger entry and safe
           },
   });
   const db = database(":memory:"),
-    app = createApp(db, {
-      ownerVerifier: async () => {
-        verified++;
-        return { verified: true };
-      },
-    }),
+    app = createApp(db),
     a = request.agent(app);
   try {
     await a
@@ -330,7 +315,6 @@ test("audio route carries clarification through to a saved ledger entry and safe
     assert.equal(r.stage, "saved");
     assert.ok(r.draft.entryId);
     assert.deepEqual((await send(previous, key, "three").expect(200)).body, r);
-    assert.equal(verified, 3);
     assert.equal(stt, 3);
     const state = (await a.get("/api/state").expect(200)).body;
     assert.ok(state.entries.some((e) => e.id === r.draft.entryId));
@@ -344,5 +328,36 @@ test("audio route carries clarification through to a saved ledger entry and safe
     global.fetch = oldFetch;
     if (oldKey === undefined) delete process.env.SARVAM_API_KEY;
     else process.env.SARVAM_API_KEY = oldKey;
+  }
+});
+
+test("repayment question is concise and a saved entry allows a separate new draft", async () => {
+  const old = process.env.SARVAM_API_KEY;
+  delete process.env.SARVAM_API_KEY;
+  const db = database(":memory:");
+  seed(db, "next");
+  initializeVoiceLedger(db);
+  try {
+    let r = await voiceLedgerTurn(
+      db,
+      "next",
+      message("Sharma ko 200 udhaar likho"),
+    );
+    assert.equal(r.stage, "promise");
+    assert.equal(r.answer, "Udhaar kab lautayenge? Koi date tay hai?");
+    r = await voiceLedgerTurn(db, "next", message("teen din baad", r));
+    r = await voiceLedgerTurn(db, "next", message("confirm save", r));
+    assert.equal(r.stage, "saved");
+    const next = await voiceLedgerTurn(
+      db,
+      "next",
+      message("Nikhil ko 100 udhaar likho"),
+    );
+    assert.equal(next.stage, "promise");
+    assert.notEqual(next.draftId, r.draftId);
+    assert.equal(next.draft.amount, 10000);
+  } finally {
+    db.close();
+    if (old !== undefined) process.env.SARVAM_API_KEY = old;
   }
 });

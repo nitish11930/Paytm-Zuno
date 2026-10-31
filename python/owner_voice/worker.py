@@ -37,6 +37,24 @@ def profile(merchant):
     return STORE / (hashlib.sha256(merchant.encode()).hexdigest() + ".enc")
 
 
+def speech_window(values, enrolling=False):
+    """Discard edge silence consistently for enrollment and verification.
+
+    Energy is a quality gate, not a speech detector or spoof protection.
+    Keep internal pauses and 100 ms context around the active region.
+    """
+    import numpy as np
+    if not np.isfinite(values).all():
+        raise ValueError("VOICE_SAMPLE_TOO_QUIET")
+    frames = values[:len(values)//1600*1600].reshape(-1, 1600)
+    active = np.flatnonzero(np.sqrt(np.mean(frames**2, axis=1)) > 0.008)
+    if len(active) / 10 < (4 if enrolling else 0.6):
+        raise ValueError("VOICE_SAMPLE_TOO_QUIET")
+    start = max(0, (int(active[0]) - 1) * 1600)
+    end = min(len(values), (int(active[-1]) + 2) * 1600)
+    return values[start:end].copy()
+
+
 def embedding(audio, enrolling=False):
     global MODEL
     import imageio_ffmpeg
@@ -58,10 +76,7 @@ def embedding(audio, enrolling=False):
     duration = len(values) / 16000
     if duration < (10 if enrolling else 1) or duration > 25.5:
         raise ValueError("VOICE_SAMPLE_DURATION")
-    frames = values[:len(values)//1600*1600].reshape(-1, 1600)
-    active = int((np.sqrt(np.mean(frames**2, axis=1)) > 0.008).sum()) / 10
-    if not np.isfinite(values).all() or active < (4 if enrolling else 0.6):
-        raise ValueError("VOICE_SAMPLE_TOO_QUIET")
+    values = speech_window(values, enrolling)
     if MODEL is None:
         with contextlib.redirect_stdout(sys.stderr):
             MODEL = EncoderClassifier.from_hparams(

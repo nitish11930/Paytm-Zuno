@@ -16,3 +16,5 @@
 !tests/**
 !deploy/
 !deploy/docker-entrypoint.sh
+
+!deploy/supabase-ca.crt
