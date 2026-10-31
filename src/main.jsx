@@ -12,6 +12,7 @@ import {
   CashChart,
   Modal,
 } from "./components/Shared";
+import PaymentImport from "./components/PaymentImport";
 import LoanReadiness from "./components/LoanReadiness";
 import EntryForm from "./components/EntryForm";
 import Voice from "./components/Voice";
@@ -64,6 +65,92 @@ import "@fontsource/noto-sans-devanagari/400.css";
 import "@fontsource/noto-sans-devanagari/600.css";
 import "./styles.css";
 const errors = {
+  IMPORT_FILE_LIMIT: [
+    "CSV must be at most 128 KB.",
+    "CSV अधिकतम 128 KB हो।",
+    "CSV maximum 128 KB ho.",
+  ],
+  IMPORT_ROW_LIMIT: [
+    "Use 1–200 rows per report.",
+    "रिपोर्ट में 1–200 पंक्तियाँ रखें।",
+    "Report mein 1–200 rows rakhein.",
+  ],
+  IMPORT_INVALID_CSV: [
+    "Invalid CSV quoting. Check the report format.",
+    "CSV प्रारूप गलत है। रिपोर्ट जाँचें।",
+    "CSV format galat hai. Report check karein.",
+  ],
+  IMPORT_COLUMNS: [
+    "Choose valid, unique columns for ID, date, amount and status.",
+    "ID, तारीख, राशि और स्थिति के सही कॉलम चुनें।",
+    "ID, date, amount aur status ke sahi columns chunein.",
+  ],
+  IMPORT_INVALID_AMOUNT: [
+    "Use a positive rupee amount with up to two decimals.",
+    "सही रुपये की राशि दें, अधिकतम दो दशमलव।",
+    "Sahi rupee amount dein, maximum do decimals.",
+  ],
+  IMPORT_INVALID_DATE: [
+    "Check date format: dates must be valid and not in the future. Names must be at most 80 characters.",
+    "तारीख प्रारूप जाँचें; भविष्य की तारीख नहीं। नाम अधिकतम 80 अक्षर।",
+    "Date format check karein; future date nahi. Naam maximum 80 characters.",
+  ],
+  IMPORT_STATUS_REVIEW: [
+    "Unrecognized/refund status needs manual review; nothing imported.",
+    "अज्ञात/रिफंड स्थिति की जाँच चाहिए; इम्पोर्ट नहीं हुआ।",
+    "Unknown/refund status review karein; import nahi hua.",
+  ],
+  IMPORT_RECORD_TYPE: [
+    "Choose payment or settlement correctly. Settlement rows cannot be imported as customer payments.",
+    "पेमेंट या सेटलमेंट सही चुनें। सेटलमेंट को ग्राहक पेमेंट न बनाएँ।",
+    "Payment ya settlement sahi chunein. Settlement ko customer payment na banayein.",
+  ],
+  IMPORT_REFERENCE: [
+    "A transaction ID / UTR is required (up to 100 characters).",
+    "ट्रांज़ैक्शन ID / UTR जरूरी है (अधिकतम 100 अक्षर)।",
+    "Transaction ID / UTR chahiye (maximum 100 characters).",
+  ],
+  IMPORT_DUPLICATE_ROWS: [
+    "The file repeats a transaction ID. Remove duplicate rows first.",
+    "फ़ाइल में ID दोहराई गई है। पहले दोहराव हटाएँ।",
+    "File mein ID repeat hai. Pehle duplicates hatayein.",
+  ],
+  IMPORT_CONFLICT: [
+    "This ID has different saved details. Resolve the report mismatch first.",
+    "इस ID के सेव विवरण अलग हैं। रिपोर्ट जाँचें।",
+    "Is ID ke saved details alag hain. Report mismatch check karein.",
+  ],
+  IMPORT_NO_SUCCESSFUL_ROWS: [
+    "No successful payment or settlement rows found.",
+    "सफल पेमेंट या सेटलमेंट रिकॉर्ड नहीं मिला।",
+    "Successful payment ya settlement row nahi mili.",
+  ],
+  IMPORT_LINK_MISMATCH: [
+    "Choose an unreversed UPI entry with the same date and amount.",
+    "समान तारीख/राशि की सही UPI एंट्री चुनें।",
+    "Same date/amount ki sahi UPI entry chunein.",
+  ],
+  IMPORT_ALREADY_LINKED: [
+    "That entry is already linked to a report payment.",
+    "यह एंट्री पहले से पेमेंट से जुड़ी है।",
+    "Ye entry pehle se payment se linked hai.",
+  ],
+  IMPORT_POSSIBLE_DUPLICATE: [
+    "Link the matching entry or confirm this is a separate payment.",
+    "मिलती एंट्री जोड़ें या अलग पेमेंट की पुष्टि करें।",
+    "Matching entry link karein ya separate payment confirm karein.",
+  ],
+  IMPORT_RECEIPT_CONFIRMATION: [
+    "Confirm actual receipt before changing the ledger.",
+    "हिसाब बदलने से पहले पैसा मिलने की पुष्टि करें।",
+    "Ledger badalne se pehle paisa milna confirm karein.",
+  ],
+  SETTLEMENT_NOT_INCOME: [
+    "Settlement is not new income and cannot be added again.",
+    "सेटलमेंट नई कमाई नहीं है; दोबारा न जोड़ें।",
+    "Settlement nayi income nahi; dobara nahi jodega.",
+  ],
+
   PAYMENT_CHECK_REQUIRED: [
     "Confirm that payment has not been received before preparing a reminder.",
     "रिमाइंडर से पहले जाँचें कि भुगतान नहीं मिला है।",
@@ -96,9 +183,9 @@ const errors = {
     "Is workspace ki awaaz pehle se set hai.",
   ],
   VOICE_SAMPLE_DURATION: [
-    "Use 10–25 seconds for enrollment; 3–25 seconds for commands.",
-    "सेटअप में 10–25 सेकंड, आदेश में 3–25 सेकंड बोलें।",
-    "Setup mein 10–25 second, command mein 3–25 second bolein.",
+    "Use 10–25 seconds for enrollment; 1–25 seconds for a clear full command.",
+    "सेटअप में 10–25 सेकंड; साफ पूरा आदेश 1–25 सेकंड बोलें।",
+    "Setup mein 10–25 second; clear poori command 1–25 second bolein.",
   ],
   VOICE_SAMPLE_TOO_QUIET: [
     "Audio is too quiet. Speak clearly and retry.",
@@ -444,6 +531,9 @@ function App() {
                 <small>
                   {e.reversed ? t("reversed") : t(kindKey(e.kind))} ·{" "}
                   {shortDate(e.date, lang)}
+                  {e.source === "report_unverified"
+                    ? " · " + t("reportSource")
+                    : ""}
                 </small>
               </span>
               <span className="entry-value">
@@ -726,6 +816,17 @@ function App() {
             </div>
           </div>
           <div className="header-language">{languageControl}</div>
+          {(screen === "home" || screen === "khata") && (
+            <div className="header-import">
+              <button
+                className="text-button"
+                onClick={() => navigate("payments")}
+              >
+                <ArrowDownToLine size={16} />
+                {t("importPayments")}
+              </button>
+            </div>
+          )}
           {screen === "home" && (
             <button
               className="voice-header"
@@ -867,6 +968,17 @@ function App() {
                 </button>
               </div>
             </>
+          )}
+          {screen === "payments" && (
+            <PaymentImport
+              state={state}
+              t={t}
+              lang={lang}
+              online={online}
+              onRefresh={refresh}
+              onError={setError}
+              onBack={() => navigate("khata")}
+            />
           )}
           {screen === "khata" && (
             <Ledger
@@ -1258,6 +1370,17 @@ function App() {
                     {f.status === "payment_check_required" && (
                       <button
                         className="secondary"
+                        onClick={() =>
+                          setModal({ type: "voice", followUpDueId: f.dueId })
+                        }
+                      >
+                        <Mic size={16} />
+                        {t("askZunoFollowUp")}
+                      </button>
+                    )}
+                    {f.status === "payment_check_required" && (
+                      <button
+                        className="secondary"
                         disabled={busy || !online}
                         onClick={() =>
                           run(async () => {
@@ -1436,6 +1559,10 @@ function App() {
           )}
           {modal.type === "voice" && (
             <Voice
+              onViewLedger={(kind) => {
+                setModal(null);
+                navigate(kind === "udhaar" ? "dues" : "khata");
+              }}
               onSaved={async () => {
                 try {
                   await refresh();
@@ -1448,6 +1575,8 @@ function App() {
               t={t}
               lang={lang}
               configured={health.voiceConfigured}
+              initialFollowUpDueId={modal.followUpDueId}
+              errorText={errText}
               onError={(e) => setError(e)}
               onAction={prepare}
               onEvidence={() => {
@@ -1797,7 +1926,34 @@ function Ledger({ state, t, lang, EntryRows, openEntry, navigate }) {
           <ChevronRight size={18} />
         </strong>
       </button>
-      <EntryRows entries={rows} />
+      {!rows.length && <Empty t={t} />}
+      {[...new Set(rows.map((e) => e.date))].map((date) => {
+        const book = state.dayBooks?.find((b) => b.date === date);
+        return (
+          <section key={date} className="day-ledger">
+            <div className="day-ledger-heading">
+              <h3>
+                {shortDate(date, lang)} · {date.slice(0, 4)}
+              </h3>
+              {book && <small>{t("dayTotals")}</small>}
+            </div>
+            {book && (
+              <div className="day-ledger-totals">
+                <span>
+                  {t("cashIn")} <strong>{money(book.inflow)}</strong>
+                </span>
+                <span>
+                  {t("cashOut")} <strong>{money(book.outflow)}</strong>
+                </span>
+                <span>
+                  {t("creditSales")} <strong>{money(book.creditSales)}</strong>
+                </span>
+              </div>
+            )}
+            <EntryRows entries={rows.filter((e) => e.date === date)} />
+          </section>
+        );
+      })}
     </>
   );
 }

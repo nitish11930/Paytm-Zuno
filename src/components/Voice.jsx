@@ -16,19 +16,27 @@ export default function Voice({
   configured,
   scenario,
   onError,
+  errorText,
   onReview,
   onAction,
   onEvidence,
   onSaved,
+  onViewLedger,
+  initialFollowUpDueId,
 }) {
   const [ledgerMode, setLedgerMode] = useState(true),
     [ledger, setLedger] = useState(null),
     [pendingTurn, setPendingTurn] = useState(null),
     [owner, setOwner] = useState(null),
+    [loadingVoice, setLoadingVoice] = useState(true),
+    [voiceError, setVoiceError] = useState(""),
+    [elapsed, setElapsed] = useState(0),
     [enrolling, setEnrolling] = useState(false),
     [consent, setConsent] = useState(false);
   const pendingAudio = useRef(null);
-  const ledgerRef = useRef(null);
+  const ledgerRef = useRef(null),
+    dialogueRef = useRef(null),
+    errorRef = useRef(null);
   const [text, setText] = useState(""),
     [status, setStatus] = useState("ready"),
     [reply, setReply] = useState(null),
@@ -36,21 +44,60 @@ export default function Voice({
   const recorder = useRef(null),
     stream = useRef(null),
     timer = useRef(null),
+    clockTimer = useRef(null),
     alive = useRef(true),
     controller = useRef(null),
     player = useRef(null),
     lastPlayer = useRef(null),
     topic = useRef(undefined),
-    locking = useRef(false);
+    locking = useRef(false),
+    captureGeneration = useRef(0);
+  useEffect(() => {
+    if (ledgerMode && reply)
+      dialogueRef.current?.scrollIntoView({
+        block: "start",
+        behavior: "smooth",
+      });
+  }, [reply, ledgerMode]);
+  useEffect(() => {
+    if (voiceError)
+      errorRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+  }, [voiceError]);
+  function reportError(message) {
+    setVoiceError(message);
+    onError(message);
+  }
   useEffect(() => {
     alive.current = true;
-    api("/voice/owner")
-      .then((r) => {
-        if (alive.current) setOwner(r);
-      })
-      .catch(() => {});
+    Promise.allSettled([
+      api("/voice/owner"),
+      initialFollowUpDueId
+        ? api("/voice/ledger", {
+            method: "POST",
+            body: {
+              text: "check due payment",
+              language: lang,
+              requestKey: crypto.randomUUID(),
+              followUpDueId: initialFollowUpDueId,
+            },
+          })
+        : api("/voice/ledger/current"),
+    ]).then(([ownerResult, current]) => {
+      if (!alive.current) return;
+      if (ownerResult.status === "fulfilled") setOwner(ownerResult.value);
+      else setVoiceError(ownerResult.reason.message);
+      if (current.status === "fulfilled" && current.value) {
+        ledgerRef.current = current.value;
+        setLedger(current.value);
+        setReply(current.value);
+      } else if (current.status === "rejected")
+        setVoiceError(current.reason.message);
+      setLoadingVoice(false);
+    });
     const release = () => {
+      captureGeneration.current++;
       clearTimeout(timer.current);
+      clearInterval(clockTimer.current);
       controller.current?.abort();
       if (recorder.current?.state === "recording") {
         recorder.current.onstop = null;
@@ -67,10 +114,15 @@ export default function Voice({
       release();
       if (alive.current) setStatus("ready");
     };
+    const visibility = () => {
+      if (document.hidden) pause();
+    };
+    document.addEventListener("visibilitychange", visibility);
     window.addEventListener("munim:native-pause", pause);
     return () => {
       alive.current = false;
       window.removeEventListener("munim:native-pause", pause);
+      document.removeEventListener("visibilitychange", visibility);
       release();
     };
   }, []);
@@ -99,12 +151,13 @@ export default function Voice({
       }
     } catch (e) {
       if (alive.current) {
-        onError(e.message);
+        reportError(e.message);
         setStatus("ready");
       }
     }
   }
   async function analyze(utterance, autoSpeak = false) {
+    reportError("");
     setStatus("processing");
     controller.current = new AbortController();
     try {
@@ -160,14 +213,21 @@ export default function Voice({
       if (alive.current) {
         if (e.status && e.status < 500 && e.status !== 429)
           setPendingTurn(null);
-        onError(e.message);
+        reportError(e.message);
         setStatus("ready");
       }
     }
   }
   async function upload(blob) {
+    reportError("");
+    if (!blob.size) {
+      reportError("INVALID_AUDIO");
+      setStatus("ready");
+      return;
+    }
     if (blob.size > 5 * 1024 * 1024) {
-      onError("AUDIO_TOO_LARGE");
+      reportError("AUDIO_TOO_LARGE");
+      setStatus("ready");
       return;
     }
     setStatus("processing");
@@ -211,6 +271,7 @@ export default function Voice({
         setOwner(r);
         setEnrolling(false);
         setConsent(false);
+        setReply({ answer: t("ownerVoiceReady"), engine: "local" });
         setStatus("ready");
         return;
       }
@@ -219,7 +280,7 @@ export default function Voice({
         setLedger(r);
         setPendingTurn(null);
         pendingAudio.current = null;
-        setText(r.transcript || "");
+        setText("");
         setReply(r);
         setStatus("ready");
         if (r.stage === "saved") await onSaved?.();
@@ -239,7 +300,7 @@ export default function Voice({
           api("/voice/owner")
             .then(setOwner)
             .catch(() => {});
-        onError(e.message);
+        reportError(e.message);
         setStatus("ready");
       }
     }
@@ -251,15 +312,16 @@ export default function Voice({
     }
     if (locking.current) return;
     if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
-      onError("VOICE_UNAVAILABLE");
+      reportError("VOICE_UNAVAILABLE");
       return;
     }
     locking.current = true;
+    const generation = ++captureGeneration.current;
     try {
       stream.current = await navigator.mediaDevices.getUserMedia({
         audio: true,
       });
-      if (!alive.current) {
+      if (!alive.current || generation !== captureGeneration.current) {
         stream.current.getTracks().forEach((t) => t.stop());
         return;
       }
@@ -275,16 +337,31 @@ export default function Voice({
       r.ondataavailable = (e) => {
         if (e.data.size) chunks.push(e.data);
       };
+      r.onerror = () => {
+        clearTimeout(timer.current);
+        clearInterval(clockTimer.current);
+        r.onstop = null;
+        stream.current?.getTracks().forEach((t) => t.stop());
+        locking.current = false;
+        if (alive.current) {
+          setStatus("ready");
+          reportError("VOICE_UNAVAILABLE");
+        }
+      };
       r.onstop = async () => {
         clearTimeout(timer.current);
+        clearInterval(clockTimer.current);
         stream.current?.getTracks().forEach((t) => t.stop());
         locking.current = false;
         if (alive.current)
           await upload(new Blob(chunks, { type: type || "audio/webm" }));
       };
+      reportError("");
       r.start();
+      setElapsed(0);
+      clearInterval(clockTimer.current);
+      clockTimer.current = setInterval(() => setElapsed((n) => n + 1), 1000);
       setStatus("listening");
-      setReply(null);
       timer.current = setTimeout(() => {
         if (r.state === "recording") r.stop();
       }, 25000);
@@ -292,7 +369,7 @@ export default function Voice({
       stream.current?.getTracks().forEach((t) => t.stop());
       locking.current = false;
       setStatus("ready");
-      onError(
+      reportError(
         e.name === "NotAllowedError"
           ? "MIC_PERMISSION_DENIED"
           : "VOICE_UNAVAILABLE",
@@ -301,6 +378,18 @@ export default function Voice({
   }
   return (
     <div className="voice-panel">
+      {voiceError && (
+        <div ref={errorRef} className="error-box" role="alert">
+          <span>{errorText ? errorText(voiceError) : t("error")}</span>
+          <button
+            type="button"
+            className="text-button"
+            onClick={() => setVoiceError("")}
+          >
+            {t("cancel")}
+          </button>
+        </div>
+      )}
       <div className="filters">
         <button
           disabled={status !== "ready" || !!pendingTurn}
@@ -323,10 +412,117 @@ export default function Voice({
           {t("businessQuestions")}
         </button>
       </div>
-      {ledgerMode && (
-        <p className="notice">
-          {t(owner?.enrolled ? "ownerVoicePrototype" : "ownerVoicePending")}
-        </p>
+      {loadingVoice && <p role="status">{t("loadingVoice")}</p>}
+      {ledgerMode &&
+        !loadingVoice &&
+        (owner?.enrolled ? (
+          <details className="notice">
+            <summary>{t("ownerVoiceReady")}</summary>
+            <p>{t("ownerVoicePrototype")}</p>
+          </details>
+        ) : (
+          <p className="notice">{t("ownerVoicePending")}</p>
+        ))}
+      {ledgerMode && reply && (
+        <section
+          ref={dialogueRef}
+          className="voice-dialogue"
+          aria-live="polite"
+        >
+          <strong>
+            {t(
+              ledger?.stage === "saved"
+                ? "saved"
+                : ledger?.stage === "promise"
+                  ? "promiseDate"
+                  : ledger?.stage === "confirm"
+                    ? "confirmVoiceEntry"
+                    : "assistantNext",
+            )}
+          </strong>
+          <p>{reply.answer}</p>
+          {reply.transcript && (
+            <details>
+              <summary>{t("transcript")}</summary>
+              <p>{reply.transcript}</p>
+            </details>
+          )}
+          <div className="assistant-actions">
+            {status === "speaking" && (
+              <button
+                className="secondary"
+                onClick={() => {
+                  player.current?.pause();
+                  setStatus("ready");
+                }}
+              >
+                <Square size={16} />
+                {t("stopSpeaking")}
+              </button>
+            )}
+            <button
+              className="secondary"
+              disabled={!configured || status !== "ready"}
+              onClick={() => playAnswer(reply.answer)}
+            >
+              <Volume2 size={16} />
+              {t("hear")}
+            </button>
+            {ledger?.stage === "confirm" && (
+              <button
+                className="primary"
+                disabled={status !== "ready" || !!pendingTurn}
+                onClick={() => analyze("confirm save", true)}
+              >
+                {t("confirmVoiceEntry")}
+              </button>
+            )}
+            {ledger?.stage === "promise" && (
+              <button
+                className="secondary"
+                disabled={status !== "ready" || !!pendingTurn}
+                onClick={() => analyze("no date", true)}
+              >
+                {t("noPromiseDate")}
+              </button>
+            )}
+            {ledger?.stage === "payment_check" && (
+              <>
+                <button
+                  className="secondary"
+                  disabled={status !== "ready" || !!pendingTurn}
+                  onClick={() => analyze("not received", true)}
+                >
+                  {t("paymentNotReceived")}
+                </button>
+                <button
+                  className="secondary"
+                  disabled={status !== "ready" || !!pendingTurn}
+                  onClick={() => analyze("received", true)}
+                >
+                  {t("paymentReceived")}
+                </button>
+              </>
+            )}
+            {ledger?.stage === "reminder_review" && (
+              <button
+                className="primary"
+                disabled={status !== "ready" || !!pendingTurn}
+                onClick={() => analyze("send on WhatsApp", true)}
+              >
+                {t("requestWhatsApp")}
+              </button>
+            )}
+            {ledger?.stage === "saved" && (
+              <button
+                className="primary"
+                onClick={() => onViewLedger(ledger.draft.kind)}
+              >
+                {t("viewRecordedEntry")}
+              </button>
+            )}
+          </div>
+        </section>
       )}
       {ledgerMode && owner?.enrolled && (
         <button
@@ -342,7 +538,7 @@ export default function Voice({
                 }),
               );
             } catch (e) {
-              onError(e.message);
+              reportError(e.message);
             }
           }}
         >
@@ -377,11 +573,22 @@ export default function Voice({
         <div className="notice" aria-live="polite">
           {ledger.draft.name || "—"} ·{" "}
           {ledger.draft.amount ? money(ledger.draft.amount) : "—"} ·{" "}
-          {ledger.stage === "saved" ? t("saved") : t("draftOnly")}
+          {ledger.stage === "saved"
+            ? t("saved")
+            : ledger.draft.flow === "followup"
+              ? t("followUp")
+              : t("draftOnly")}
         </div>
       )}
       {ledgerMode && ledger?.stage === "manual" && (
-        <button className="secondary" onClick={() => onReview(ledger.draft)}>
+        <button
+          className="secondary"
+          onClick={() =>
+            ledger.draft.flow === "followup"
+              ? onViewLedger("udhaar")
+              : onReview(ledger.draft)
+          }
+        >
           {t("correct")}
         </button>
       )}
@@ -412,11 +619,15 @@ export default function Voice({
           <button
             className="record-button"
             disabled={
+              loadingVoice ||
               (ledgerMode && !(owner?.enrolled || (enrolling && consent))) ||
               (!configured && !enrolling) ||
               !["ready", "listening"].includes(status) ||
               (!!pendingTurn && status !== "listening") ||
-              (ledgerMode && ["saved", "cancelled"].includes(ledger?.stage))
+              (ledgerMode &&
+                ["saved", "cancelled", "delivery_pending", "complete"].includes(
+                  ledger?.stage,
+                ))
             }
             onClick={record}
             aria-label={status === "listening" ? t("listening") : t("listen")}
@@ -439,6 +650,11 @@ export default function Voice({
                 ? t("speaking")
                 : t("listen")}
         </strong>
+        {status === "listening" && (
+          <p className="microcopy">
+            {elapsed}s · {t(enrolling ? "enrollmentMinimum" : "commandMinimum")}
+          </p>
+        )}
         <div className={"waveform " + (status === "listening" ? "moving" : "")}>
           {Array.from({ length: 17 }, (_, i) => (
             <span
@@ -487,23 +703,30 @@ export default function Voice({
           disabled={
             status !== "ready" ||
             !!pendingTurn ||
-            (ledgerMode && ["saved", "cancelled"].includes(ledger?.stage))
+            (ledgerMode &&
+              ["saved", "cancelled", "delivery_pending", "complete"].includes(
+                ledger?.stage,
+              ))
           }
         />
       </label>
       <button
         className="primary"
         disabled={
+          loadingVoice ||
           (!text.trim() && !pendingTurn) ||
           status !== "ready" ||
-          (ledgerMode && ["saved", "cancelled"].includes(ledger?.stage))
+          (ledgerMode &&
+            ["saved", "cancelled", "delivery_pending", "complete"].includes(
+              ledger?.stage,
+            ))
         }
         onClick={() => analyze(text)}
       >
         {pendingTurn && status === "ready" ? t("retry") : t("parse")}
         <ArrowRight size={18} />
       </button>
-      {reply && (
+      {reply && !ledgerMode && (
         <div className="answer-card" aria-live="polite">
           <Leaf size={22} />
           <span className="badge">

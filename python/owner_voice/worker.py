@@ -56,11 +56,11 @@ def embedding(audio, enrolling=False):
             raise ValueError("AUDIO_DECODE_FAILED")
         values = np.frombuffer(result.stdout, dtype="<f4").copy()
     duration = len(values) / 16000
-    if duration < (10 if enrolling else 3) or duration > 25.5:
+    if duration < (10 if enrolling else 1) or duration > 25.5:
         raise ValueError("VOICE_SAMPLE_DURATION")
     frames = values[:len(values)//1600*1600].reshape(-1, 1600)
     active = int((np.sqrt(np.mean(frames**2, axis=1)) > 0.008).sum()) / 10
-    if not np.isfinite(values).all() or active < (4 if enrolling else 1.5):
+    if not np.isfinite(values).all() or active < (4 if enrolling else 0.6):
         raise ValueError("VOICE_SAMPLE_TOO_QUIET")
     if MODEL is None:
         with contextlib.redirect_stdout(sys.stderr):

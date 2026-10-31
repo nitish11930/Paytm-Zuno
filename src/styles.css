@@ -2408,3 +2408,137 @@ blockquote {
   margin-top: 12px;
   width: 100%;
 }
+
+.header-import {
+  display: flex;
+  justify-content: flex-end;
+  margin: 8px 0;
+}
+.header-import button {
+  font-size: 12px;
+  padding: 6px 9px;
+}
+.day-ledger {
+  margin-top: 22px;
+}
+.day-ledger-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.day-ledger-heading h3 {
+  font-size: 15px;
+}
+.day-ledger-heading small {
+  font-size: 11px;
+  color: var(--muted);
+}
+.day-ledger-totals {
+  display: flex;
+  gap: 8px;
+  margin: 4px 0 12px;
+  flex-wrap: wrap;
+}
+.day-ledger-totals span {
+  flex: 1;
+  min-width: 82px;
+  background: #edf6f0;
+  border-radius: 12px;
+  padding: 9px;
+  font-size: 11px;
+  color: #416657;
+}
+.day-ledger-totals strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+  color: #173e32;
+}
+.import-card {
+  padding: 16px;
+  margin: 14px 0;
+}
+.import-mapping {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 16px 0;
+}
+.import-mapping label {
+  min-width: 0;
+  font-size: 12px;
+}
+.import-preview {
+  max-height: 220px;
+  overflow: auto;
+}
+.import-preview-row {
+  padding: 10px 0;
+  border-bottom: 1px solid #e6eee9;
+  overflow-wrap: anywhere;
+}
+.import-preview-row small,
+.imported-payment summary small {
+  display: block;
+  font-size: 11px;
+  color: #587368;
+  margin-top: 6px;
+}
+.import-upload {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 13px;
+}
+.import-upload input {
+  max-width: 100%;
+  font-size: 12px;
+}
+.imported-payment {
+  overflow-wrap: anywhere;
+}
+.imported-payment label {
+  margin: 12px 0;
+  font-size: 13px;
+}
+.import-consent {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 8px;
+}
+.import-consent input[type="checkbox"] {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  min-height: 20px;
+  margin: 2px 0;
+  padding: 0;
+  accent-color: #087657;
+}
+@media (max-width: 360px) {
+  .import-mapping {
+    grid-template-columns: 1fr;
+  }
+}
+
+.voice-dialogue {
+  background: #e9f7ee;
+  border: 1px solid #c8e7d6;
+  border-radius: 18px;
+  padding: 16px;
+  margin: 12px 0;
+  color: #173e32;
+}
+.voice-dialogue > strong {
+  font-size: 14px;
+}
+.voice-dialogue p {
+  font-size: 15px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.voice-dialogue .assistant-actions {
+  flex-wrap: wrap;
+}

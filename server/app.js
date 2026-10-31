@@ -1,6 +1,16 @@
+import {
+  importColumns,
+  previewImport,
+  confirmImport,
+  classifyPayment,
+} from "./payment-import.js";
 import express from "express";
 import { ownerVoice } from "./owner-voice.js";
-import { initializeVoiceLedger, voiceLedgerTurn } from "./voice-ledger.js";
+import {
+  initializeVoiceLedger,
+  voiceLedgerTurn,
+  currentVoiceLedger,
+} from "./voice-ledger.js";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import { rateLimit } from "express-rate-limit";
@@ -90,6 +100,7 @@ export function createApp(
     }),
   );
   app.use(cookieParser());
+  app.use("/api/payments/preview", express.json({ limit: "256kb" }));
   app.use(express.json({ limit: "32kb" }));
   app.use("/api", (req, res, next) => {
     if (!["GET", "HEAD", "OPTIONS"].includes(req.method)) {
@@ -327,6 +338,60 @@ export function createApp(
       .parse(q.body);
     r.json(changeSchedule(db, q.merchant, q.params.id, v));
   });
+  app.post("/api/payments/preview", (q, r) => {
+    const v = z
+      .object({
+        csv: z.string().max(131072),
+        mapping: z
+          .object({
+            reference: z.string(),
+            date: z.string(),
+            amount: z.string(),
+            status: z.string(),
+            name: z.string().optional(),
+            recordType: z.string().optional(),
+          })
+          .optional(),
+        defaultType: z.enum(["payment", "settlement"]).default("payment"),
+        dateFormat: z.enum(["iso", "dmySlash", "dmyDash"]).default("iso"),
+      })
+      .parse(q.body);
+    if (!v.mapping) return r.json(importColumns(v.csv));
+    r.json(
+      previewImport(
+        db,
+        q.merchant,
+        v.csv,
+        v.mapping,
+        v.defaultType,
+        v.dateFormat,
+      ),
+    );
+  });
+  app.post("/api/payments/imports/:id/confirm", (q, r) =>
+    r.json(confirmImport(db, q.merchant, z.string().uuid().parse(q.params.id))),
+  );
+  app.post("/api/payments/:id/classify", (q, r) => {
+    const v = z
+      .discriminatedUnion("category", [
+        z.object({ category: z.literal("link"), entryId: z.string().uuid() }),
+        z.object({
+          category: z.literal("collection"),
+          receivedConfirmed: z.literal(true),
+          separateConfirmed: z.boolean().optional(),
+          dueId: z.string().max(100),
+        }),
+        z.object({
+          category: z.enum(["sale", "receipt"]),
+          receivedConfirmed: z.literal(true),
+          separateConfirmed: z.boolean().optional(),
+        }),
+      ])
+      .parse(q.body);
+    r.json(
+      classifyPayment(db, q.merchant, z.string().uuid().parse(q.params.id), v),
+    );
+  });
   app.get("/api/follow-ups", (q, r) => r.json(followUpQueue(db, q.merchant)));
   app.post("/api/actions/propose", (q, r) => {
     const options = z
@@ -350,12 +415,16 @@ export function createApp(
       message: { error: "RATE_LIMITED" },
     }),
   );
+  app.get("/api/voice/ledger/current", (q, r) =>
+    r.json(currentVoiceLedger(db, q.merchant)),
+  );
   app.post("/api/voice/ledger", async (q, r) => {
     const input = z
       .object({
         text: z.string().trim().min(1).max(1000),
         language: lang,
         requestKey: z.string().uuid(),
+        followUpDueId: z.string().max(100).optional(),
         draftId: z.string().uuid().optional(),
         version: z.number().int().positive().optional(),
       })
@@ -417,6 +486,7 @@ export function createApp(
       .object({
         language: lang,
         requestKey: z.string().uuid(),
+        followUpDueId: z.string().max(100).optional(),
         draftId: z.string().uuid().optional(),
         version: z.coerce.number().int().positive().optional(),
       })

@@ -1,4 +1,6 @@
 import base64
+import io
+import wave
 import importlib.util
 from pathlib import Path
 import tempfile
@@ -12,6 +14,18 @@ spec.loader.exec_module(worker)
 
 
 class VoiceStorageTests(unittest.TestCase):
+    def test_real_decoder_rejects_short_and_silent_audio(self):
+        def silence(seconds):
+            output=io.BytesIO()
+            with wave.open(output,"wb") as wav:
+                wav.setnchannels(1);wav.setsampwidth(2);wav.setframerate(16000)
+                wav.writeframes(b"\x00\x00"*int(seconds*16000))
+            return output.getvalue()
+        with self.assertRaisesRegex(ValueError,"VOICE_SAMPLE_DURATION"):
+            worker.embedding(silence(0.4))
+        with self.assertRaisesRegex(ValueError,"VOICE_SAMPLE_TOO_QUIET"):
+            worker.embedding(silence(3))
+
     def test_encrypted_profile_isolation_match_mismatch_and_tamper(self):
         with tempfile.TemporaryDirectory() as folder, patch.object(worker, "STORE", Path(folder)):
             sample = {"merchant": "one", "audio": base64.b64encode(b"sample").decode()}

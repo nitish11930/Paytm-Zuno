@@ -1,6 +1,12 @@
 import { extractPromise, noPromise } from "./promise-date.js";
 import { randomUUID } from "node:crypto";
-import { addEntry, dues, DomainError } from "./domain.js";
+import {
+  addEntry,
+  dues,
+  DomainError,
+  followUpQueue,
+  propose,
+} from "./domain.js";
 import { understand } from "./understanding.js";
 import { parseIntent } from "./voice.js";
 
@@ -27,6 +33,24 @@ const confirm = (text) =>
     "हाँ सेव करो",
     "हां सेव करो",
     "हाँ दर्ज करो",
+    "haan save kar do",
+    "han save kar do",
+    "haan save kardo",
+    "haan record kar do",
+    "haan record kardo",
+    "haan likh lo",
+    "yes record it",
+    "save it",
+    "record it",
+    "proceed and save",
+    "हाँ सेव कर दो",
+    "हां सेव कर दो",
+    "हाँ रिकॉर्ड करो",
+    "हाँ रिकॉर्ड कर दो",
+    "हां लिख लो",
+    "हाँ दर्ज कर दो",
+    "जी सेव कर दो",
+    "जी हाँ सेव करो",
   ].includes(words(text));
 const cancel = (text) =>
   [
@@ -192,10 +216,18 @@ export async function voiceLedgerTurn(db, m, input) {
   if (input.draftId && !row) throw new DomainError("ACTION_NOT_FOUND", 404);
   if (row && (row.version !== input.version || row.expires < Date.now()))
     throw new DomainError("VOICE_DRAFT_CHANGED", 409);
-  const promise = extractPromise(input.text);
+  const command = input.text.replace(
+    /^\s*(?:hey\s+zuno|hi\s+zuno|हे\s*ज़?ूनो|हे\s*जूनो)[,\s:।-]*/iu,
+    "",
+  );
+  const promise = extractPromise(command);
+  const wantsFollowUp =
+    !!input.followUpDueId ||
+    (/remind|follow[ -]?up|रिमाइंडर|याद दिला/i.test(command) &&
+      !/likh|लिख|record.*transaction|दर्ज/i.test(command));
   const parsed =
-    !row && !cancel(input.text)
-      ? await understand(promise.date ? promise.text : input.text)
+    !row && !wantsFollowUp && !cancel(input.text)
+      ? await understand(promise.date ? promise.text : command)
       : null;
   return db.transaction(() => {
     // Recheck after external model latency; concurrent turns cannot overwrite a newer draft.
@@ -233,6 +265,132 @@ export async function voiceLedgerTurn(db, m, input) {
         "रद्द किया। कोई एंट्री सेव नहीं हुई।",
         "Cancel kiya. Koi entry save nahi hui.",
       ]);
+    } else if (
+      draft.flow === "followup" ||
+      (row.stage === "new" && wantsFollowUp)
+    ) {
+      if (row.stage === "new") {
+        const pending = followUpQueue(db, m).filter(
+          (d) => d.status === "payment_check_required",
+        );
+        const compact = (value) =>
+          normalize(value)
+            .replace(/[^\p{L}\p{M}\p{N}]/gu, "")
+            .replace(/ji$/u, "");
+        const matches = input.followUpDueId
+          ? pending.filter((d) => d.dueId === input.followUpDueId)
+          : pending.filter((d) => compact(command).includes(compact(d.name)));
+        if (matches.length !== 1) {
+          draft = { flow: "followup" };
+          row.stage = "manual";
+          answer = choose(input.language, [
+            "Choose the due customer from payment follow-ups so I do not contact the wrong person.",
+            "गलत व्यक्ति को याद न दिलाऊँ, इसलिए फॉलो-अप में सही बकाया चुनें।",
+            "Galat person ko reminder na jaye, follow-ups mein sahi due chunein.",
+          ]);
+        } else {
+          const target = matches[0];
+          draft = {
+            flow: "followup",
+            dueId: target.dueId,
+            name: target.name,
+            amount: target.outstanding,
+          };
+          row.stage = "payment_check";
+          answer = choose(input.language, [
+            `${draft.name} has ${amountText(draft.amount)} due. Was payment received, including cash?`,
+            `${draft.name} के ${amountText(draft.amount)} बाकी हैं। नकद सहित भुगतान मिला था क्या?`,
+            `${draft.name} ke ${amountText(draft.amount)} baaki hain. Cash mila kar payment mila tha kya?`,
+          ]);
+        }
+      } else {
+        const current = followUpQueue(db, m).find(
+          (d) =>
+            d.dueId === draft.dueId && d.status === "payment_check_required",
+        );
+        if (!current) {
+          row.stage = "complete";
+          answer = choose(input.language, [
+            "This due is no longer awaiting follow-up. No reminder was sent.",
+            "यह बकाया अब फॉलो-अप में नहीं है। कोई रिमाइंडर नहीं गया।",
+            "Ye due ab follow-up mein nahi hai. Koi reminder nahi gaya.",
+          ]);
+        } else if (row.stage === "payment_check") {
+          const value = words(input.text);
+          if (
+            /^(?:nahi|nahin|nahi diye|nahi diya|nahi mile|payment nahi aaya|not received|no|नहीं|नहीं दिए|नहीं दिया|पैसे नहीं दिए|भुगतान नहीं मिला|नहीं मिले)(?:\s+(?:bhej do|bhejdo|reminder bhejo|whatsapp par|whatsapp pe|भेज दो))*$/u.test(
+              value,
+            )
+          ) {
+            const proposal = propose(db, m, {
+              dueId: draft.dueId,
+              unpaidConfirmed: true,
+            });
+            draft.amount = proposal.payload[0].amount;
+            draft.proposalId = proposal.id;
+            draft.message = proposal.payload[0].message;
+            row.stage = "reminder_review";
+            answer = choose(input.language, [
+              `${draft.message} Shall I send this on WhatsApp?`,
+              `${draft.message} यह WhatsApp पर भेजना है?`,
+              `${draft.message} Ye WhatsApp par bhejna hai?`,
+            ]);
+          } else if (
+            /^(?:haan|ha|yes|received|mil gaye|हाँ|हां|मिल गए|मिल गये)$/u.test(
+              value,
+            )
+          ) {
+            row.stage = "manual";
+            answer = choose(input.language, [
+              "Please record the actual amount and Cash/UPI collection in the payment form. I have not changed the balance.",
+              "कितनी राशि और नकद/UPI मिला, वसूली फॉर्म में दर्ज करें। मैंने राशि नहीं बदली है।",
+              "Actual amount aur Cash/UPI collection form mein record karein. Maine balance nahi badla.",
+            ]);
+          } else
+            answer = choose(input.language, [
+              "Please say received or not received. I will not assume from silence.",
+              "मिला या नहीं मिला कहें। चुप रहने को जवाब नहीं मानूँगा।",
+              "Mila ya nahi mila bolein. Chup rehne ko jawab nahi manunga.",
+            ]);
+        } else if (row.stage === "reminder_review") {
+          const saved = db
+            .prepare("SELECT * FROM proposals WHERE id=? AND merchant=?")
+            .get(draft.proposalId, m);
+          if (
+            current.outstanding !== draft.amount ||
+            !saved ||
+            saved.expires < Date.now()
+          ) {
+            row.stage = "payment_check";
+            answer = choose(input.language, [
+              "The amount or draft changed. Check payment again before preparing a fresh reminder.",
+              "राशि या ड्राफ्ट बदला है। नया रिमाइंडर बनाने से पहले भुगतान फिर जाँचें।",
+              "Amount ya draft badla hai. Naye reminder se pehle payment phir check karein.",
+            ]);
+          } else if (
+            /whatsapp|व्हाट्सएप|व्हाट्सऐप|भेज दो|bhej\s*do|send/i.test(
+              input.text,
+            )
+          ) {
+            row.stage = "delivery_pending";
+            answer = choose(input.language, [
+              "Your reminder draft is saved. WhatsApp is not connected, so no message has been sent.",
+              "रिमाइंडर ड्राफ्ट सेव है। WhatsApp जुड़ा नहीं है, इसलिए कोई संदेश नहीं भेजा गया।",
+              "Reminder draft saved hai. WhatsApp connected nahi, isliye koi message nahi bheja gaya.",
+            ]);
+          } else
+            answer = choose(input.language, [
+              "Review the draft, then say send on WhatsApp or cancel.",
+              "ड्राफ्ट जाँचें, फिर WhatsApp पर भेजो या रद्द करो कहें।",
+              "Draft check karein, phir WhatsApp par bhejo ya cancel bolein.",
+            ]);
+        } else
+          answer = choose(input.language, [
+            "No WhatsApp message has been sent. The saved draft is waiting for integration.",
+            "WhatsApp संदेश नहीं गया है। सेव ड्राफ्ट कनेक्शन की प्रतीक्षा में है।",
+            "WhatsApp message nahi gaya. Saved draft integration ka wait kar raha hai.",
+          ]);
+      }
     } else if (row.stage === "confirm" && confirm(input.text)) {
       const before = JSON.stringify(draft);
       const [stage, prompt] = question(db, m, draft, input.language);
@@ -365,4 +523,20 @@ export async function voiceLedgerTurn(db, m, input) {
     );
     return result;
   })();
+}
+
+export function currentVoiceLedger(db, m) {
+  const row = db
+    .prepare(
+      "SELECT * FROM voice_drafts WHERE merchant=? ORDER BY rowid DESC LIMIT 1",
+    )
+    .get(m);
+  if (!row || row.stage === "cancelled" || row.expires < Date.now())
+    return null;
+  const turn = db
+    .prepare(
+      "SELECT result FROM voice_turns WHERE merchant=? AND json_extract(result,'$.draftId')=? AND json_extract(result,'$.version')=? ORDER BY rowid DESC LIMIT 1",
+    )
+    .get(m, row.id, row.version);
+  return turn ? JSON.parse(turn.result) : null;
 }

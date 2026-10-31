@@ -36,6 +36,9 @@ export function database(path = "data/munim.sqlite") {
   db.exec(
     `CREATE TABLE IF NOT EXISTS voice_audio_requests(merchant TEXT NOT NULL REFERENCES merchants(id),request_key TEXT NOT NULL,input_hash TEXT NOT NULL,result TEXT NOT NULL,PRIMARY KEY(merchant,request_key));`,
   );
+  db.exec(`CREATE TABLE IF NOT EXISTS payment_import_batches(id TEXT PRIMARY KEY,merchant TEXT NOT NULL REFERENCES merchants(id),payload TEXT NOT NULL,expires INTEGER NOT NULL,result TEXT);
+ CREATE TABLE IF NOT EXISTS imported_payments(id TEXT PRIMARY KEY,merchant TEXT NOT NULL REFERENCES merchants(id),batch_id TEXT NOT NULL REFERENCES payment_import_batches(id),reference TEXT NOT NULL,record_type TEXT NOT NULL,date TEXT NOT NULL,amount INTEGER NOT NULL,name TEXT NOT NULL,source TEXT NOT NULL,entry_id TEXT REFERENCES entries(id),decision TEXT,UNIQUE(merchant,record_type,reference));
+ CREATE UNIQUE INDEX IF NOT EXISTS payment_entry_link ON imported_payments(entry_id) WHERE entry_id IS NOT NULL;`);
   for (const [name, definition] of [
     ["version", "INTEGER NOT NULL DEFAULT 1"],
     ["kind", "TEXT NOT NULL DEFAULT 'sale'"],
@@ -187,6 +190,12 @@ export function snapshot(db, m, scenario = "expected", complete = false) {
   const pending = dues(db, m);
   return {
     merchant,
+    dayBooks: dailyBooks(entries),
+    paymentInbox: db
+      .prepare(
+        "SELECT p.*, (SELECT reason FROM entry_voids v WHERE v.entry_id=p.entry_id) AS reversed FROM imported_payments p WHERE merchant=? ORDER BY date DESC,rowid DESC",
+      )
+      .all(m),
     followUps: followUpQueue(db, m),
     customers: db
       .prepare("SELECT * FROM customers WHERE merchant=? ORDER BY name,id")
@@ -221,7 +230,11 @@ export function snapshot(db, m, scenario = "expected", complete = false) {
     },
   };
 }
-export function addEntry(db, m, input) {
+export function addEntry(db, m, input, options = {}) {
+  const recordedDate = options.date || day(),
+    recordedSource = options.source || "merchant";
+  if (!validDueDate(recordedDate) || recordedDate > day())
+    throw new DomainError("INVALID_DUE_DATE");
   return db.transaction(() => {
     const duplicate = db
       .prepare("SELECT * FROM entries WHERE merchant=? AND request_key=?")
@@ -245,6 +258,8 @@ export function addEntry(db, m, input) {
       if ((linked?.schedule_id || null) !== (input.scheduleId || null))
         throw new DomainError("IDEMPOTENCY_CONFLICT", 409);
       if (
+        (options.date && duplicate.date !== recordedDate) ||
+        duplicate.source !== recordedSource ||
         duplicate.kind !== input.kind ||
         duplicate.amount !== input.amount ||
         duplicate.method !== input.method ||
@@ -316,10 +331,10 @@ export function addEntry(db, m, input) {
       amount: input.amount,
       name: input.name,
       method: input.method,
-      date: day(),
+      date: recordedDate,
       note: input.note || "",
       due_id: input.kind === "collection" ? input.dueId : null,
-      source: "merchant",
+      source: recordedSource,
       request_key: input.requestKey,
     };
     db.prepare(
@@ -512,6 +527,8 @@ export function updateShop(db, m, values) {
 }
 export function resetDemo(db, m) {
   db.transaction(() => {
+    db.prepare("DELETE FROM imported_payments WHERE merchant=?").run(m);
+    db.prepare("DELETE FROM payment_import_batches WHERE merchant=?").run(m);
     db.prepare("DELETE FROM voice_audio_requests WHERE merchant=?").run(m);
     db.prepare("DELETE FROM voice_turns WHERE merchant=?").run(m);
     db.prepare("DELETE FROM voice_drafts WHERE merchant=?").run(m);
@@ -608,6 +625,8 @@ export function exportArchive(db, m) {
     "voice_drafts",
     "voice_turns",
     "voice_audio_requests",
+    "payment_import_batches",
+    "imported_payments",
   ]) {
     tables[table] = db
       .prepare(
@@ -628,4 +647,34 @@ export function exportArchive(db, m) {
     ...state,
     tables,
   };
+}
+
+export function dailyBooks(entries) {
+  const groups = new Map();
+  for (const e of entries) {
+    if (e.reversed) continue;
+    const row = groups.get(e.date) || {
+      date: e.date,
+      inflow: 0,
+      outflow: 0,
+      creditSales: 0,
+      sales: 0,
+      collections: 0,
+      otherReceipts: 0,
+      count: 0,
+    };
+    row.count++;
+    if (e.kind === "udhaar") {
+      row.creditSales += e.amount;
+      row.sales += e.amount;
+    } else if (e.kind === "expense") row.outflow += e.amount;
+    else {
+      row.inflow += e.amount;
+      if (e.kind === "sale") row.sales += e.amount;
+      if (e.kind === "collection") row.collections += e.amount;
+      if (e.kind === "receipt") row.otherReceipts += e.amount;
+    }
+    groups.set(e.date, row);
+  }
+  return [...groups.values()].sort((a, b) => b.date.localeCompare(a.date));
 }
