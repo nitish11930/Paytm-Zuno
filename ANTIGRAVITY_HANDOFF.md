@@ -120,3 +120,5 @@ Preserved existing voice ledger without touching audio capture or voice turns. B
 
 
 2026-10-31 — Microphone-open blank-screen hotfix: reproduced live TypeError reading undefined draft.name. PostgreSQL no-current-draft response was {active:false}, unlike SQLite null. Return null and guard frontend restore on draft presence. Added isolated PostgreSQL repository regression. 10 voice tests + build passed; live redeploy verification required.
+
+Hotfix verified: 52b772c deployed successfully on Render (dep-dbisdp6tlv9c73bjo0eg). Reloaded production app, opened header microphone, waited for empty-draft restore and confirmed voice panel stayed mounted with mic enabled. Full 65 tests + build passed. Proof: outputs/release/zuno-mic-fixed.png in chat workspace.
