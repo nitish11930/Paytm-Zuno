@@ -111,17 +111,28 @@ export async function understand(text, previousTopic) {
     )
       parsed.topic = "entry";
     // Numeric amounts from digit-bearing transcripts cannot silently be changed by the model.
+    let conflict = false;
     if (
       parsed.topic === "entry" &&
       fallback.amount !== null &&
       /\d/.test(text) &&
       parsed.amount !== null &&
       Math.round(parsed.amount * 100) !== fallback.amount
-    )
-      parsed.amount = null;
+    ) {
+      conflict = true;
+    }
+    const finalAmount = conflict
+      ? null
+      : parsed.amount !== null
+        ? Math.round(parsed.amount * 100)
+        : (fallback.amount !== null ? fallback.amount : null);
+    const finalKind = parsed.kind || fallback.kind || null;
+    const finalName = parsed.name || fallback.name || "";
     return {
       ...parsed,
-      amount: parsed.amount === null ? null : Math.round(parsed.amount * 100),
+      kind: finalKind,
+      amount: finalAmount,
+      name: finalName,
       model: true,
       requestId: r.id,
     };

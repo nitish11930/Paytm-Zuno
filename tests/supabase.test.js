@@ -5,7 +5,10 @@ import { randomBytes, randomUUID } from "node:crypto";
 import dotenv from "dotenv";
 dotenv.config({ path: "privacy/supabase.env", quiet: true });
 
-import { createPostgresPool, createPostgresRepository } from "../server/postgres.js";
+import {
+  createPostgresPool,
+  createPostgresRepository,
+} from "../server/postgres.js";
 import { createApp } from "../server/app.js";
 
 test("Supabase PostgreSQL persistence and concurrency integration", async (t) => {
@@ -30,7 +33,11 @@ test("Supabase PostgreSQL persistence and concurrency integration", async (t) =>
     assert.equal(snap1.merchant.shop, "Ramesh Kirana");
     assert.equal(snap1.cash, 1200000); // 1200000 opening + 85000 + 35000 - 120000
     assert.equal(snap1.dues.length, 4);
-    await repo.updateShop(testMerchant, {shop:"Setup test",owner:"Test owner",language:"english"});
+    await repo.updateShop(testMerchant, {
+      shop: "Setup test",
+      owner: "Test owner",
+      language: "english",
+    });
     assert.equal((await repo.snapshot(testMerchant)).merchant.setup, 1);
 
     // 3. Add an entry with promised repayment date
@@ -76,8 +83,16 @@ test("Supabase PostgreSQL persistence and concurrency integration", async (t) =>
     const succeeded = results.filter((r) => r.status === "fulfilled");
     const rejected = results.filter((r) => r.status === "rejected");
 
-    assert.equal(succeeded.length, 1, "Exactly one concurrent collection must succeed");
-    assert.equal(rejected.length, 1, "The exceeding concurrent collection must be rejected");
+    assert.equal(
+      succeeded.length,
+      1,
+      "Exactly one concurrent collection must succeed",
+    );
+    assert.equal(
+      rejected.length,
+      1,
+      "The exceeding concurrent collection must be rejected",
+    );
     assert.match(rejected[0].reason.message, /COLLECTION_EXCEEDS_DUE/);
 
     // Verify remaining due in Supabase
@@ -87,7 +102,13 @@ test("Supabase PostgreSQL persistence and concurrency integration", async (t) =>
 
     // 5. Reverse entry: cannot reverse an udhaar entry with active collections
     await assert.rejects(
-      () => repo.reverseEntry(testMerchant, udhaarEntry.id, "Entered in error", randomUUID()),
+      () =>
+        repo.reverseEntry(
+          testMerchant,
+          udhaarEntry.id,
+          "Entered in error",
+          randomUUID(),
+        ),
       (err) => err.message === "CANNOT_REVERSE_COLLECTED_DUE",
     );
 
@@ -100,10 +121,20 @@ test("Supabase PostgreSQL persistence and concurrency integration", async (t) =>
       requestKey: randomUUID(),
     });
     const revKey = randomUUID();
-    const rev1 = await repo.reverseEntry(testMerchant, expEntry.id, "Entered twice", revKey);
+    const rev1 = await repo.reverseEntry(
+      testMerchant,
+      expEntry.id,
+      "Entered twice",
+      revKey,
+    );
     assert.equal(rev1.ok, true);
     // Replay with same key must succeed idempotently
-    const revReplay = await repo.reverseEntry(testMerchant, expEntry.id, "Entered twice", revKey);
+    const revReplay = await repo.reverseEntry(
+      testMerchant,
+      expEntry.id,
+      "Entered twice",
+      revKey,
+    );
     assert.equal(revReplay.ok, true);
   } finally {
     // 6. Clean up test merchant
@@ -130,7 +161,11 @@ test("Express API with Supabase PostgreSQL repository", async (t) => {
     const healthRes = await agent.get("/api/health").expect(200);
     assert.equal(healthRes.body.ok, true);
     assert.equal(healthRes.body.databaseProvider, "postgres");
-    assert.equal(healthRes.body.supabaseUrl, undefined, "Never leak credentials");
+    assert.equal(
+      healthRes.body.supabaseUrl,
+      undefined,
+      "Never leak credentials",
+    );
 
     // 2. Login creates authenticated session in PostgreSQL
     const loginRes = await agent
@@ -160,7 +195,14 @@ test("Express API with Supabase PostgreSQL repository", async (t) => {
       .post("/api/orders")
       .send({
         customerName: "Vikram Singh",
-        items: [{ productId: prodId, name: "Basmati Rice 1kg", quantity: 2, unitPrice: 12000 }],
+        items: [
+          {
+            productId: prodId,
+            name: "Basmati Rice 1kg",
+            quantity: 2,
+            unitPrice: 12000,
+          },
+        ],
         requestKey: randomUUID(),
       })
       .expect(201);
@@ -169,7 +211,10 @@ test("Express API with Supabase PostgreSQL repository", async (t) => {
     const orderId = orderRes.body.order.id;
 
     // Accept order (generates bill and decrements stock)
-    const acceptRes = await agent.post(`/api/orders/${orderId}/accept`).send({}).expect(200);
+    const acceptRes = await agent
+      .post(`/api/orders/${orderId}/accept`)
+      .send({})
+      .expect(200);
     assert.equal(acceptRes.body.order.status, "accepted");
     assert.match(acceptRes.body.order.bill_number, /^BILL-/);
 
@@ -198,5 +243,62 @@ test("Express API with Supabase PostgreSQL repository", async (t) => {
       await repo.resetDemo(merchantId);
     }
     await pool.end();
+  }
+});
+
+test("PostgreSQL voice flow records fields, accepts date replies, saves once and starts a second entry", async (t) => {
+  if (!process.env.SUPABASE_DB_URL) return t.skip("Supabase not configured");
+  const oldKey = process.env.SARVAM_API_KEY;
+  delete process.env.SARVAM_API_KEY;
+  const pool = createPostgresPool({ max: 3 }),
+    repo = createPostgresRepository(pool);
+  const merchant = `voice-parity-${randomBytes(6).toString("hex")}`;
+  const turn = (text, prev, requestKey = randomUUID()) =>
+    repo.voiceLedgerTurn(merchant, {
+      text,
+      language: "hinglish",
+      requestKey,
+      ...(prev ? { draftId: prev.draftId, version: prev.version } : {}),
+    });
+  try {
+    await repo.seed(merchant);
+    let r = await turn("Hey Zuno Nikhil ko 200 udhaar likho");
+    assert.equal(r.stage, "promise");
+    assert.equal(r.draft.amount, 20000);
+    assert.equal(r.draft.name, "Nikhil");
+    r = await turn("teen din baad", r);
+    assert.equal(r.stage, "confirm");
+    assert.match(r.draft.dueDate, /^\d{4}-\d{2}-\d{2}$/);
+    r = await turn("haan", r);
+    assert.equal(r.stage, "confirm");
+    const previous = r,
+      key = randomUUID();
+    r = await turn("haan save karo", previous, key);
+    assert.equal(r.stage, "saved");
+    assert.ok(r.draft.entryId);
+    assert.deepEqual(await turn("haan save karo", previous, key), r);
+    assert.deepEqual(await repo.currentVoiceLedger(merchant), r);
+    const state = await repo.snapshot(merchant);
+    assert.ok(state.entries.some((e) => e.id === r.draft.entryId));
+    assert.ok(state.dues.some((d) => d.id === r.draft.entryId));
+    let second = await turn("sale record karo");
+    assert.equal(second.stage, "amount");
+    second = await turn("50", second);
+    assert.equal(second.stage, "name");
+    second = await turn("Counter", second);
+    assert.equal(second.stage, "method");
+    second = await turn("cash", second);
+    assert.equal(second.stage, "confirm");
+    second = await turn("cancel", second);
+    assert.equal(second.stage, "cancelled");
+    const broken = await turn("hello");
+    assert.equal(broken.stage, "kind");
+    const recovered = await turn("Manoj ko 100 udhaar likho", broken);
+    assert.equal(recovered.stage, "promise");
+    assert.equal(recovered.draft.amount, 10000);
+  } finally {
+    await repo.resetDemo(merchant);
+    await pool.end();
+    if (oldKey !== undefined) process.env.SARVAM_API_KEY = oldKey;
   }
 });

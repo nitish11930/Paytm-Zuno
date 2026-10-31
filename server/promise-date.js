@@ -43,7 +43,7 @@ export function extractPromise(text, today = day()) {
     .replace(/[०-९]/g, (c) => "०१२३४५६७८९".indexOf(c));
   const matches = [
     ...normalized.matchAll(
-      /\b\d{4}-\d{2}-\d{2}\b|(?:\d+|[\p{L}\p{M}]+)\s+(?:days?|din|दिन|weeks?|hafte|हफ्ते)\s*(?:baad|mein|me|बाद|में)?|day after tomorrow|परसों|parson|tomorrow|कल|\bkal\b|today|आज|\baaj\b/gu,
+      /\b\d{4}-\d{2}-\d{2}\b|(?:\d+|[\p{L}\p{M}]+)\s+(?:days?|din|दिन|weeks?|hafte|हफ्ते)\s*(?:baad|mein|me|बाद|में)?|day after tomorrow|परसों|parson|\bparso\b|tomorrow|कल|\bkal\b|today|आज|\baaj\b/gu,
     ),
   ];
   if (matches.length !== 1)
@@ -59,7 +59,7 @@ export function extractPromise(text, today = day()) {
     let days = pair
       ? (/^\d+$/.test(pair[1]) ? Number(pair[1]) : counts[pair[1]]) *
         (/week|hafte|हफ्ते/.test(pair[2]) ? 7 : 1)
-      : /day after|परसों|parson/.test(value)
+      : /day after|परसों|parson|parso/.test(value)
         ? 2
         : /tomorrow|कल|kal/.test(value)
           ? 1
@@ -80,7 +80,10 @@ export function extractPromise(text, today = day()) {
     found: true,
   };
 }
-export const noPromise = (text) =>
-  /^(?:skip|no date|date nahi|pata nahi|not decided|तारीख नहीं|पता नहीं|बाद में)$/u.test(
-    text.toLowerCase().trim(),
+export const noPromise = (text) => {
+  const s = text.toLowerCase().trim();
+  return (
+    /^(?:skip|no|nahi|nahin|no date|date nahi|date tay nahi|koi date nahi|pata nahi|nahi pata|not decided|kuch nahi|तारीख नहीं|पता नहीं|बाद में|बाद मे|तय नहीं|नहीं)$/u.test(s) ||
+    /date.*(?:nahi|nahin|tay nahi|pata nahi)|(?:nahi|nahin).*(?:pata|tay|date)|baad\s*me/i.test(s)
   );
+};

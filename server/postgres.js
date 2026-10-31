@@ -1,3 +1,4 @@
+import { applyVoiceFields } from "./voice-fields.js";
 import pg from "pg";
 import dotenv from "dotenv";
 import { readFileSync, existsSync } from "node:fs";
@@ -599,7 +600,8 @@ export function createPostgresRepository(pool) {
         throw new DomainError("INVALID_DUE_DATE");
       }
 
-      return withTransaction(pool, async (client) => {
+      const transact = options.client ? (fn) => fn(options.client) : (fn) => withTransaction(pool, fn);
+      return transact(async (client) => {
         // Idempotency check with row locking
         const duplicateRes = await client.query(
           "SELECT * FROM zuno.entries WHERE merchant = $1 AND request_key = $2",
@@ -1468,18 +1470,11 @@ export function createPostgresRepository(pool) {
       );
       if (!res.rows.length) return null;
       const row = res.rows[0];
-      const draft = JSON.parse(row.payload);
-      const [stage, answer] = await this.question(m, draft, draft.language || "hinglish");
-      return {
-        active: true,
-        type: "voice-ledger",
-        draftId: row.id,
-        version: row.version,
-        stage: row.stage,
-        draft,
-        answer,
-        engine: "local",
-      };
+      if (row.stage === "cancelled") return null;
+      const turn = await q(`SELECT result FROM zuno.voice_turns
+        WHERE merchant=$1 AND result::jsonb->>'draftId'=$2
+          AND result::jsonb->>'version'=$3 LIMIT 1`, [m,row.id,String(row.version)]);
+      return turn.rows.length ? JSON.parse(turn.rows[0].result) : null;
     },
 
     async voiceLedgerTurn(m, input) {
@@ -1519,7 +1514,7 @@ export function createPostgresRepository(pool) {
           !/likh|लिख|record.*transaction|दर्ज/i.test(command));
 
       const parsed =
-        !row && !wantsFollowUp && !cancelWord(input.text)
+        (!row || row.stage === "kind") && !wantsFollowUp && !cancelWord(input.text)
           ? await understand(promise.date ? promise.text : command)
           : null;
 
@@ -1570,15 +1565,8 @@ export function createPostgresRepository(pool) {
             "Cancel kiya. Koi entry save nahi hui.",
           ]);
         } else {
-          if (parsed && row.stage === "new") {
-            if (parsed.topic === "entry" && parsed.entry) {
-              draft = { ...draft, ...parsed.entry, language: input.language };
-              if (promise.date && draft.kind === "udhaar") {
-                draft.dueDate = promise.date;
-                draft.promiseCaptured = true;
-              }
-            }
-          }
+          draft = applyVoiceFields(draft, row.stage, input.text, parsed);
+          draft.language = input.language;
 
           if (row.stage === "confirm" && confirmWord(input.text)) {
             // Save entry directly into authoritative database
@@ -1593,13 +1581,13 @@ export function createPostgresRepository(pool) {
                 dueId: draft.dueId,
                 dueDate: draft.dueDate,
                 customerId: draft.customerId,
-                requestKey: randomUUID(),
+                requestKey: row.id,
               },
-              { source: "voice" },
+              { source: "voice", client },
             );
 
             row.stage = "saved";
-            draft.savedEntryId = savedEntry.id;
+            draft.entryId = savedEntry.id;
             answer = choose(input.language, [
               `Saved ${draft.name} · ${amountText(draft.amount)}. Tap mic for next entry.`,
               `${draft.name} · ${amountText(draft.amount)} दर्ज कर लिया गया। अगली एंट्री के लिए माइक दबाएँ।`,

@@ -21,7 +21,7 @@
     "supabase:check": "node scripts/supabase.mjs check",
     "supabase:schema": "node scripts/supabase.mjs schema",
     "supabase:migrate": "node scripts/migrate-to-supabase.mjs",
-    "supabase:verify": "node scripts/migrate-to-supabase.mjs --verify"
+    "supabase:verify": "node scripts/migrate-to-supabase.mjs --verify --sqlite data/backups/zuno-1793440093188.sqlite"
   },
   "dependencies": {
     "@fontsource/noto-sans-devanagari": "^5.3.0",

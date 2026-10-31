@@ -1,3 +1,4 @@
+import { applyVoiceFields } from "./voice-fields.js";
 import { extractPromise, noPromise } from "./promise-date.js";
 import { randomUUID } from "node:crypto";
 import {
@@ -412,94 +413,7 @@ export async function voiceLedgerTurn(db, m, input) {
         ]);
       }
     } else {
-      if (row.stage === "new" && parsed?.topic === "entry" && !parsed.negated) {
-        draft = {
-          kind: parsed.kind,
-          amount: parsed.amount,
-          name: parsed.name || "",
-          ...(parsed.kind === "udhaar" && promise.date
-            ? { dueDate: promise.date, promiseCaptured: true }
-            : {}),
-        };
-        if (/\bupi\b|यूपीआई/i.test(input.text)) draft.method = "upi";
-        else if (/\bcash\b|नकद|नकदी/i.test(input.text)) draft.method = "cash";
-      } else if (row.stage === "kind") {
-        const t = words(input.text);
-        draft.kind = /udhaar|उधार|unpaid/.test(t)
-          ? "udhaar"
-          : /collection|वसूली|vasooli/.test(t)
-            ? "collection"
-            : /expense|खर्च|kharch/.test(t)
-              ? "expense"
-              : /sale|बिक्री|bikri/.test(t)
-                ? "sale"
-                : undefined;
-      } else if (row.stage === "amount") {
-        const n = parseIntent(input.text).amount;
-        // Only amount-only replies are accepted locally; do not add quantities or dates.
-        const value = input.text
-          .toLowerCase()
-          .replace(/(?:rupees|rupaye|रुपये|रुपए|rs\.?)/g, " ")
-          .trim();
-        const allowed = new Set([
-          "one",
-          "two",
-          "three",
-          "four",
-          "five",
-          "six",
-          "seven",
-          "eight",
-          "nine",
-          "ten",
-          "fifty",
-          "hundred",
-          "thousand",
-          "ek",
-          "do",
-          "teen",
-          "char",
-          "paanch",
-          "panch",
-          "sau",
-          "hazar",
-          "hazaar",
-          "एक",
-          "दो",
-          "तीन",
-          "चार",
-          "पांच",
-          "पाँच",
-          "छह",
-          "सात",
-          "आठ",
-          "नौ",
-          "दस",
-          "पचास",
-          "सौ",
-          "हजार",
-          "हज़ार",
-        ]);
-        draft.amount =
-          /^[\d०-९.,₹\s]+$/.test(value) ||
-          value.split(/\s+/).every((w) => allowed.has(w))
-            ? n
-            : null;
-      } else if (row.stage === "promise") {
-        if (promise.date) {
-          draft.dueDate = promise.date;
-          draft.promiseCaptured = true;
-        } else if (noPromise(input.text)) {
-          draft.promiseCaptured = true;
-          delete draft.dueDate;
-        }
-      } else if (row.stage === "name") {
-        draft.name = input.text.trim().slice(0, 80);
-      } else if (row.stage === "method") {
-        const t = words(input.text);
-        if (["cash", "nakad", "नकद", "नकदी"].includes(t)) draft.method = "cash";
-        else if (["upi", "यूपीआई"].includes(t)) draft.method = "upi";
-      }
+      draft = applyVoiceFields(draft, row.stage, input.text, parsed);
       const [stage, prompt] = question(db, m, draft, input.language);
       row.stage = stage;
       answer = prompt;
