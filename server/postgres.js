@@ -1723,9 +1723,20 @@ export function createPostgresRepository(pool) {
       };
     },
 
-    // --- PRODUCT CATALOG & INVENTORY ---
     async listProducts(m) {
       const res = await q("SELECT * FROM zuno.products WHERE merchant = $1 AND active = 1 ORDER BY name ASC", [m]);
+      if (res.rows.length === 0) {
+        const now = new Date().toISOString();
+        for (const item of DEFAULT_KIRANA_PRODUCTS) {
+          const id = randomUUID();
+          await q(
+            "INSERT INTO zuno.products (id, merchant, name, unit, price, stock, active, created) VALUES ($1, $2, $3, $4, $5, $6, 1, $7)",
+            [id, m, item.name, item.unit, item.price, item.stock, now],
+          );
+        }
+        const seeded = await q("SELECT * FROM zuno.products WHERE merchant = $1 AND active = 1 ORDER BY name ASC", [m]);
+        return seeded.rows.map((p) => ({ ...p, price: Number(p.price) }));
+      }
       return res.rows.map((p) => ({ ...p, price: Number(p.price) }));
     },
 
