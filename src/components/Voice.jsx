@@ -19,7 +19,16 @@ export default function Voice({
   onReview,
   onAction,
   onEvidence,
+  onSaved,
 }) {
+  const [ledgerMode, setLedgerMode] = useState(true),
+    [ledger, setLedger] = useState(null),
+    [pendingTurn, setPendingTurn] = useState(null),
+    [owner, setOwner] = useState(null),
+    [enrolling, setEnrolling] = useState(false),
+    [consent, setConsent] = useState(false);
+  const pendingAudio = useRef(null);
+  const ledgerRef = useRef(null);
   const [text, setText] = useState(""),
     [status, setStatus] = useState("ready"),
     [reply, setReply] = useState(null),
@@ -34,6 +43,12 @@ export default function Voice({
     topic = useRef(undefined),
     locking = useRef(false);
   useEffect(() => {
+    alive.current = true;
+    api("/voice/owner")
+      .then((r) => {
+        if (alive.current) setOwner(r);
+      })
+      .catch(() => {});
     const release = () => {
       clearTimeout(timer.current);
       controller.current?.abort();
@@ -93,17 +108,48 @@ export default function Voice({
     setStatus("processing");
     controller.current = new AbortController();
     try {
-      const result = await api("/voice/intent", {
-        method: "POST",
-        body: {
-          text: utterance,
-          language: lang,
-          previousTopic: topic.current,
-          scenario,
-        },
-        signal: controller.current.signal,
-      });
+      if (pendingAudio.current) {
+        await upload(pendingAudio.current.blob);
+        return;
+      }
+      const turn = ledgerMode
+        ? pendingTurn || {
+            text: utterance,
+            language: lang,
+            requestKey: crypto.randomUUID(),
+            ...(ledgerRef.current
+              ? {
+                  draftId: ledgerRef.current.draftId,
+                  version: ledgerRef.current.version,
+                }
+              : {}),
+          }
+        : null;
+      if (turn) setPendingTurn(turn);
+      const result = ledgerMode
+        ? await api("/voice/ledger", {
+            method: "POST",
+            body: turn,
+            signal: controller.current.signal,
+          })
+        : await api("/voice/intent", {
+            method: "POST",
+            body: {
+              text: utterance,
+              language: lang,
+              previousTopic: topic.current,
+              scenario,
+            },
+            signal: controller.current.signal,
+          });
       if (!alive.current) return;
+      if (ledgerMode) {
+        ledgerRef.current = result;
+        setLedger(result);
+        setPendingTurn(null);
+        setText("");
+        if (result.stage === "saved") await onSaved?.();
+      }
       if (result.answer) {
         topic.current = result.type;
         setReply(result);
@@ -112,6 +158,8 @@ export default function Voice({
       } else onReview({ ...result, transcript: utterance });
     } catch (e) {
       if (alive.current) {
+        if (e.status && e.status < 500 && e.status !== 429)
+          setPendingTurn(null);
         onError(e.message);
         setStatus("ready");
       }
@@ -126,19 +174,71 @@ export default function Voice({
     const f = new FormData();
     f.append("audio", blob, "voice-note");
     f.append("language", lang);
+    let endpoint = "/voice/transcribe";
+    if (ledgerMode) {
+      if (enrolling) {
+        endpoint = "/voice/owner/enroll";
+        f.append("consent", String(consent));
+      } else {
+        endpoint = "/voice/ledger/audio";
+        if (!pendingAudio.current)
+          pendingAudio.current = {
+            blob,
+            requestKey: crypto.randomUUID(),
+            draftId: ledgerRef.current?.draftId,
+            version: ledgerRef.current?.version,
+            language: lang,
+          };
+        const turn = pendingAudio.current;
+        f.set("language", turn.language);
+        f.append("requestKey", turn.requestKey);
+        if (turn.draftId) {
+          f.append("draftId", turn.draftId);
+          f.append("version", String(turn.version));
+        }
+        setPendingTurn({ audio: true });
+      }
+    }
     controller.current = new AbortController();
     try {
-      const r = await api("/voice/transcribe", {
+      const r = await api(endpoint, {
         method: "POST",
         body: f,
         signal: controller.current.signal,
       });
       if (!alive.current) return;
-      setText(r.transcript);
-      setReply(null);
-      await analyze(r.transcript, true);
+      if (ledgerMode && enrolling) {
+        setOwner(r);
+        setEnrolling(false);
+        setConsent(false);
+        setStatus("ready");
+        return;
+      }
+      if (ledgerMode) {
+        ledgerRef.current = r;
+        setLedger(r);
+        setPendingTurn(null);
+        pendingAudio.current = null;
+        setText(r.transcript || "");
+        setReply(r);
+        setStatus("ready");
+        if (r.stage === "saved") await onSaved?.();
+        await playAnswer(r.answer);
+      } else {
+        setText(r.transcript);
+        setReply(null);
+        await analyze(r.transcript, true);
+      }
     } catch (e) {
       if (alive.current) {
+        if (e.status && e.status < 500 && e.status !== 429) {
+          pendingAudio.current = null;
+          setPendingTurn(null);
+        }
+        if (enrolling)
+          api("/voice/owner")
+            .then(setOwner)
+            .catch(() => {});
         onError(e.message);
         setStatus("ready");
       }
@@ -201,6 +301,108 @@ export default function Voice({
   }
   return (
     <div className="voice-panel">
+      <div className="filters">
+        <button
+          disabled={status !== "ready" || !!pendingTurn}
+          className={ledgerMode ? "active" : ""}
+          onClick={() => {
+            setLedgerMode(true);
+            setReply(null);
+          }}
+        >
+          {t("voiceLedger")}
+        </button>
+        <button
+          disabled={status !== "ready" || !!pendingTurn}
+          className={!ledgerMode ? "active" : ""}
+          onClick={() => {
+            setLedgerMode(false);
+            setReply(null);
+          }}
+        >
+          {t("businessQuestions")}
+        </button>
+      </div>
+      {ledgerMode && (
+        <p className="notice">
+          {t(owner?.enrolled ? "ownerVoicePrototype" : "ownerVoicePending")}
+        </p>
+      )}
+      {ledgerMode && owner?.enrolled && (
+        <button
+          className="text-button"
+          disabled={status !== "ready" || !!pendingTurn}
+          onClick={async () => {
+            if (!window.confirm(t("removeOwnerVoiceConfirm"))) return;
+            try {
+              setOwner(
+                await api("/voice/owner/delete", {
+                  method: "POST",
+                  body: { confirm: true },
+                }),
+              );
+            } catch (e) {
+              onError(e.message);
+            }
+          }}
+        >
+          {t("removeOwnerVoice")}
+        </button>
+      )}
+      {ledgerMode && !owner?.enrolled && (
+        <div className="notice owner-enrollment">
+          <label>
+            <input
+              type="checkbox"
+              checked={consent}
+              disabled={status !== "ready"}
+              onChange={(e) => {
+                setConsent(e.target.checked);
+                if (!e.target.checked) setEnrolling(false);
+              }}
+            />
+            {t("ownerVoiceConsent")}
+          </label>
+          <button
+            className="secondary"
+            disabled={!consent || status !== "ready"}
+            onClick={() => setEnrolling(true)}
+          >
+            {t("enrollOwnerVoice")}
+          </button>
+          {enrolling && <p>{t("ownerEnrollmentGuide")}</p>}
+        </div>
+      )}
+      {ledgerMode && ledger && (
+        <div className="notice" aria-live="polite">
+          {ledger.draft.name || "—"} ·{" "}
+          {ledger.draft.amount ? money(ledger.draft.amount) : "—"} ·{" "}
+          {ledger.stage === "saved" ? t("saved") : t("draftOnly")}
+        </div>
+      )}
+      {ledgerMode && ledger?.stage === "manual" && (
+        <button className="secondary" onClick={() => onReview(ledger.draft)}>
+          {t("correct")}
+        </button>
+      )}
+      {ledgerMode && pendingTurn && status === "ready" && (
+        <p className="notice">{t("retryVoiceTurn")}</p>
+      )}
+      {ledgerMode && ledger && !pendingTurn && (
+        <button
+          className="secondary"
+          disabled={status !== "ready"}
+          onClick={() => {
+            ledgerRef.current = null;
+            setLedger(null);
+            setReply(null);
+            setText("");
+          }}
+        >
+          {t("newVoiceEntry")}
+        </button>
+      )}
+
       <div
         className={
           "voice-record " + (status === "listening" ? "recording" : "")
@@ -209,7 +411,13 @@ export default function Voice({
         <div className="voice-orbits">
           <button
             className="record-button"
-            disabled={!configured || !["ready", "listening"].includes(status)}
+            disabled={
+              (ledgerMode && !(owner?.enrolled || (enrolling && consent))) ||
+              (!configured && !enrolling) ||
+              !["ready", "listening"].includes(status) ||
+              (!!pendingTurn && status !== "listening") ||
+              (ledgerMode && ["saved", "cancelled"].includes(ledger?.stage))
+            }
             onClick={record}
             aria-label={status === "listening" ? t("listening") : t("listen")}
           >
@@ -252,7 +460,12 @@ export default function Voice({
           type="file"
           aria-label={t("uploadVoice")}
           accept="audio/wav,audio/webm,audio/mp4,audio/ogg"
-          disabled={!configured || status !== "ready"}
+          disabled={
+            (ledgerMode && !owner?.enrolled) ||
+            !configured ||
+            status !== "ready" ||
+            !!pendingTurn
+          }
           onChange={(e) => {
             const file = e.target.files?.[0];
             e.target.value = "";
@@ -271,15 +484,23 @@ export default function Voice({
           maxLength={1000}
           rows={3}
           placeholder={t("voiceExample")}
-          disabled={status !== "ready"}
+          disabled={
+            status !== "ready" ||
+            !!pendingTurn ||
+            (ledgerMode && ["saved", "cancelled"].includes(ledger?.stage))
+          }
         />
       </label>
       <button
         className="primary"
-        disabled={!text.trim() || status !== "ready"}
+        disabled={
+          (!text.trim() && !pendingTurn) ||
+          status !== "ready" ||
+          (ledgerMode && ["saved", "cancelled"].includes(ledger?.stage))
+        }
         onClick={() => analyze(text)}
       >
-        {t("parse")}
+        {pendingTurn && status === "ready" ? t("retry") : t("parse")}
         <ArrowRight size={18} />
       </button>
       {reply && (

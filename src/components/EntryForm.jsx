@@ -20,6 +20,7 @@ export default function EntryForm({
     [dueId, setDueId] = useState(initial.dueId || ""),
     [review, setReview] = useState(!!initial.pending),
     [attempted, setAttempted] = useState(!!initial.pending),
+    [dueDate, setDueDate] = useState(initial.dueDate || ""),
     [customerId, setCustomerId] = useState(initial.customerId || "");
   const requestKey = useRef(initial.requestKey || crypto.randomUUID());
   const paise = Math.round(Number(amount) * 100);
@@ -56,6 +57,7 @@ export default function EntryForm({
           method,
           note,
           dueId: kind === "collection" ? dueId : undefined,
+          dueDate: kind === "udhaar" ? dueDate || undefined : undefined,
           requestKey: requestKey.current,
           scheduleId: initial.scheduleId,
           scheduleVersion: initial.scheduleVersion,
@@ -97,6 +99,18 @@ export default function EntryForm({
               </option>
             ))}
           </select>
+        </label>
+      )}
+      {kind === "udhaar" && (
+        <label>
+          {t("promiseDate")}
+          <input
+            type="date"
+            value={dueDate}
+            disabled={review}
+            onChange={(e) => setDueDate(e.target.value)}
+          />
+          <small>{t("promiseDateHint")}</small>
         </label>
       )}
       {review && (

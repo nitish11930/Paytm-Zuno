@@ -1,4 +1,6 @@
 import express from "express";
+import { ownerVoice } from "./owner-voice.js";
+import { initializeVoiceLedger, voiceLedgerTurn } from "./voice-ledger.js";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import { rateLimit } from "express-rate-limit";
@@ -17,13 +19,19 @@ import {
   resetDemo,
   reverseEntry,
   DomainError,
+  validDueDate,
+  followUpQueue,
 } from "./domain.js";
 import { transcribe, speak } from "./voice.js";
 import { assistantAnswer } from "./advisor.js";
 import { addSchedule, changeSchedule } from "./planning.js";
 const hash = (s) => createHash("sha256").update(s).digest("hex");
 const lang = z.enum(["english", "hindi", "hinglish"]);
-export function createApp(db = database()) {
+export function createApp(
+  db = database(),
+  { ownerVerifier = ownerVoice } = {},
+) {
+  initializeVoiceLedger(db);
   const app = express();
   const allowedOrigins = new Set([
     `http://127.0.0.1:${process.env.PORT || 5187}`,
@@ -268,6 +276,7 @@ export function createApp(db = database()) {
         scheduleId: z.string().max(100).optional(),
         scheduleVersion: z.number().int().positive().optional(),
         customerId: z.string().uuid().optional(),
+        dueDate: z.string().refine(validDueDate).optional(),
         requestKey: z.string().uuid(),
       })
       .parse(q.body);
@@ -318,9 +327,16 @@ export function createApp(db = database()) {
       .parse(q.body);
     r.json(changeSchedule(db, q.merchant, q.params.id, v));
   });
-  app.post("/api/actions/propose", (q, r) =>
-    r.status(201).json(propose(db, q.merchant)),
-  );
+  app.get("/api/follow-ups", (q, r) => r.json(followUpQueue(db, q.merchant)));
+  app.post("/api/actions/propose", (q, r) => {
+    const options = z
+      .object({
+        dueId: z.string().max(100).optional(),
+        unpaidConfirmed: z.boolean().optional(),
+      })
+      .parse(q.body || {});
+    r.status(201).json(propose(db, q.merchant, options));
+  });
   app.post("/api/actions/:id/decision", (q, r) => {
     const { approve } = z.object({ approve: z.boolean() }).parse(q.body);
     r.json(execute(db, q.merchant, q.params.id, approve));
@@ -334,6 +350,19 @@ export function createApp(db = database()) {
       message: { error: "RATE_LIMITED" },
     }),
   );
+  app.post("/api/voice/ledger", async (q, r) => {
+    const input = z
+      .object({
+        text: z.string().trim().min(1).max(1000),
+        language: lang,
+        requestKey: z.string().uuid(),
+        draftId: z.string().uuid().optional(),
+        version: z.number().int().positive().optional(),
+      })
+      .refine((v) => !!v.draftId === !!v.version)
+      .parse(q.body);
+    r.json(await voiceLedgerTurn(db, q.merchant, input));
+  });
   app.post("/api/voice/intent", async (q, r) => {
     const { text, language, previousTopic, scenario } = z
       .object({
@@ -369,6 +398,57 @@ export function createApp(db = database()) {
   const upload = multer({
     storage: multer.memoryStorage(),
     limits: { fileSize: 5 * 1024 * 1024, files: 1 },
+  });
+  app.get("/api/voice/owner", async (q, r) =>
+    r.json(await ownerVerifier("status", q.merchant)),
+  );
+  app.post("/api/voice/owner/delete", async (q, r) => {
+    z.object({ confirm: z.literal(true) }).parse(q.body);
+    r.json(await ownerVerifier("delete", q.merchant));
+  });
+  app.post("/api/voice/owner/enroll", upload.single("audio"), async (q, r) => {
+    if (q.body.consent !== "true" || !q.file)
+      throw new DomainError("VOICE_CONSENT_REQUIRED");
+    r.json(await ownerVerifier("enroll", q.merchant, q.file.buffer));
+  });
+  app.post("/api/voice/ledger/audio", upload.single("audio"), async (q, r) => {
+    if (!q.file) throw new DomainError("AUDIO_REQUIRED");
+    const input = z
+      .object({
+        language: lang,
+        requestKey: z.string().uuid(),
+        draftId: z.string().uuid().optional(),
+        version: z.coerce.number().int().positive().optional(),
+      })
+      .refine((v) => !!v.draftId === !!v.version)
+      .parse(q.body);
+    const inputHash = createHash("sha256")
+      .update(JSON.stringify(input))
+      .update(q.file.buffer)
+      .digest("hex");
+    const cached = db
+      .prepare(
+        "SELECT * FROM voice_audio_requests WHERE merchant=? AND request_key=?",
+      )
+      .get(q.merchant, input.requestKey);
+    if (cached) {
+      if (cached.input_hash !== inputHash)
+        throw new DomainError("IDEMPOTENCY_CONFLICT", 409);
+      return r.json(JSON.parse(cached.result));
+    }
+    await ownerVerifier("verify", q.merchant, q.file.buffer);
+    const spoken = await transcribe(q.file, input.language);
+    const result = {
+      ...(await voiceLedgerTurn(db, q.merchant, {
+        ...input,
+        text: spoken.transcript,
+      })),
+      transcript: spoken.transcript,
+    };
+    db.prepare(
+      "INSERT OR IGNORE INTO voice_audio_requests VALUES(?,?,?,?)",
+    ).run(q.merchant, input.requestKey, inputHash, JSON.stringify(result));
+    r.json(result);
   });
   app.post(
     "/api/voice/transcribe",

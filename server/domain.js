@@ -28,6 +28,14 @@ export function database(path = "data/munim.sqlite") {
  CREATE TABLE IF NOT EXISTS entry_customers(entry_id TEXT PRIMARY KEY REFERENCES entries(id),customer_id TEXT NOT NULL REFERENCES customers(id));
  CREATE TABLE IF NOT EXISTS workspace_access(hash TEXT PRIMARY KEY,merchant TEXT NOT NULL REFERENCES merchants(id));
  CREATE TABLE IF NOT EXISTS schedule_requests(merchant TEXT NOT NULL REFERENCES merchants(id),request_key TEXT NOT NULL,payload TEXT NOT NULL,PRIMARY KEY(merchant,request_key));`);
+  db.exec(
+    `CREATE TABLE IF NOT EXISTS due_terms(entry_id TEXT PRIMARY KEY REFERENCES entries(id),merchant TEXT NOT NULL REFERENCES merchants(id),due_date TEXT NOT NULL);`,
+  );
+  db.exec(`CREATE TABLE IF NOT EXISTS voice_drafts(id TEXT PRIMARY KEY,merchant TEXT NOT NULL REFERENCES merchants(id),version INTEGER NOT NULL,payload TEXT NOT NULL,stage TEXT NOT NULL,expires INTEGER NOT NULL);
+ CREATE TABLE IF NOT EXISTS voice_turns(merchant TEXT NOT NULL REFERENCES merchants(id),request_key TEXT NOT NULL,input TEXT NOT NULL,result TEXT NOT NULL,PRIMARY KEY(merchant,request_key));`);
+  db.exec(
+    `CREATE TABLE IF NOT EXISTS voice_audio_requests(merchant TEXT NOT NULL REFERENCES merchants(id),request_key TEXT NOT NULL,input_hash TEXT NOT NULL,result TEXT NOT NULL,PRIMARY KEY(merchant,request_key));`,
+  );
   for (const [name, definition] of [
     ["version", "INTEGER NOT NULL DEFAULT 1"],
     ["kind", "TEXT NOT NULL DEFAULT 'sale'"],
@@ -179,6 +187,7 @@ export function snapshot(db, m, scenario = "expected", complete = false) {
   const pending = dues(db, m);
   return {
     merchant,
+    followUps: followUpQueue(db, m),
     customers: db
       .prepare("SELECT * FROM customers WHERE merchant=? ORDER BY name,id")
       .all(m),
@@ -224,6 +233,13 @@ export function addEntry(db, m, input) {
       const linkedCustomer = db
         .prepare("SELECT customer_id FROM entry_customers WHERE entry_id=?")
         .get(duplicate.id);
+      const term = db
+        .prepare(
+          "SELECT due_date FROM due_terms WHERE entry_id=? AND merchant=?",
+        )
+        .get(duplicate.id, m);
+      if ((term?.due_date || null) !== (input.dueDate || null))
+        throw new DomainError("IDEMPOTENCY_CONFLICT", 409);
       if (input.customerId && linkedCustomer?.customer_id !== input.customerId)
         throw new DomainError("IDEMPOTENCY_CONFLICT", 409);
       if ((linked?.schedule_id || null) !== (input.scheduleId || null))
@@ -240,6 +256,11 @@ export function addEntry(db, m, input) {
         throw new DomainError("IDEMPOTENCY_CONFLICT", 409);
       return duplicate;
     }
+    if (
+      input.dueDate &&
+      (input.kind !== "udhaar" || !validDueDate(input.dueDate))
+    )
+      throw new DomainError("INVALID_DUE_DATE");
     if (input.kind === "collection") {
       const d = dues(db, m).find((d) => d.id === input.dueId);
       if (!d) throw new DomainError("DUE_NOT_FOUND");
@@ -304,6 +325,12 @@ export function addEntry(db, m, input) {
     db.prepare(
       "INSERT INTO entries VALUES(@id,@merchant,@kind,@amount,@name,@method,@date,@note,@due_id,@source,@request_key)",
     ).run(entry);
+    if (input.dueDate)
+      db.prepare("INSERT INTO due_terms VALUES(?,?,?)").run(
+        entry.id,
+        m,
+        input.dueDate,
+      );
     if (customerId)
       db.prepare("INSERT INTO entry_customers VALUES(?,?)").run(
         entry.id,
@@ -330,9 +357,43 @@ export function addEntry(db, m, input) {
     return entry;
   })();
 }
-function reminderRows(db, m) {
+export function validDueDate(value) {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value))
+    return false;
+  const d = new Date(value + "T12:00:00Z");
+  return Number.isFinite(d.getTime()) && d.toISOString().slice(0, 10) === value;
+}
+export function followUpQueue(db, m, today = day()) {
+  if (!validDueDate(today)) throw new DomainError("INVALID_DUE_DATE");
+  const terms = new Map(
+    db
+      .prepare("SELECT entry_id,due_date FROM due_terms WHERE merchant=?")
+      .all(m)
+      .map((r) => [r.entry_id, r.due_date]),
+  );
+  return dues(db, m)
+    .filter((d) => terms.has(d.id))
+    .map((d) => ({
+      dueId: d.id,
+      customerId: d.customerId,
+      name: d.name,
+      outstanding: d.outstanding,
+      dueDate: terms.get(d.id),
+      status: terms.get(d.id) <= today ? "payment_check_required" : "scheduled",
+    }))
+    .sort(
+      (a, b) =>
+        a.dueDate.localeCompare(b.dueDate) || a.dueId.localeCompare(b.dueId),
+    );
+}
+function reminderRows(db, m, scopeDueId) {
   const groups = new Map();
   for (const d of dues(db, m)) {
+    const term = db
+      .prepare("SELECT due_date FROM due_terms WHERE entry_id=? AND merchant=?")
+      .get(d.id, m);
+    if (term?.due_date > day()) continue;
+    if (scopeDueId && d.id !== scopeDueId) continue;
     const key = d.customerId;
     const g = groups.get(key) || {
       id: "",
@@ -344,11 +405,54 @@ function reminderRows(db, m) {
     g.amount += d.outstanding;
     groups.set(key, g);
   }
-  return [...groups.values()];
+  const shop = db
+    .prepare("SELECT shop,language FROM merchants WHERE id=?")
+    .get(m);
+  return [...groups.values()].map((row) => ({
+    ...row,
+    message: friendlyReminder(row.name, row.amount, shop.shop, shop.language),
+    ...(scopeDueId
+      ? {
+          scopeDueId,
+          dueDate:
+            db
+              .prepare(
+                "SELECT due_date FROM due_terms WHERE entry_id=? AND merchant=?",
+              )
+              .get(scopeDueId, m)?.due_date || null,
+        }
+      : {}),
+  }));
 }
-export function propose(db, m) {
-  const rows = reminderRows(db, m);
+export function friendlyReminder(name, amount, shop, language) {
+  const value = new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 2,
+  }).format(amount / 100);
+  if (language === "hindi")
+    return `नमस्ते ${name} जी 😊 ${value} का छोटा-सा हिसाब याद दिलाना था। सुविधानुसार जमा कर दीजिएगा। भुगतान कर चुके हैं तो बता दें, हिसाब मिला लेते हैं। — ${shop}`;
+  if (language === "english")
+    return `Hello ${name} 😊 A friendly reminder about your pending ${value}. Please pay when convenient. Already paid? Let us know so we can check our records. — ${shop}`;
+  return `Namaste ${name} ji 😊 ${value} ka chhota-sa hisaab yaad dilana tha. Suvidha se jama kar dijiyega. Payment kar chuke hain toh bata dein, hisaab mila lete hain. — ${shop}`;
+}
+export function propose(db, m, options = {}) {
+  if (options.dueId) {
+    if (options.unpaidConfirmed !== true)
+      throw new DomainError("PAYMENT_CHECK_REQUIRED", 409);
+    const item = followUpQueue(db, m).find((d) => d.dueId === options.dueId);
+    if (!item) throw new DomainError("DUE_NOT_FOUND", 404);
+    if (item.status !== "payment_check_required")
+      throw new DomainError("FOLLOW_UP_NOT_DUE", 409);
+  }
+  const rows = reminderRows(db, m, options.dueId);
   if (!rows.length) throw new DomainError("NO_PENDING_DUES");
+  const existing = db
+    .prepare(
+      "SELECT * FROM proposals WHERE merchant=? AND status='pending' AND payload=? AND expires>?",
+    )
+    .get(m, JSON.stringify(rows), Date.now());
+  if (existing) return { ...existing, payload: rows };
   const p = {
     id: randomUUID(),
     merchant: m,
@@ -359,6 +463,13 @@ export function propose(db, m) {
   db.prepare(
     "INSERT INTO proposals VALUES(@id,@merchant,@payload,@expires,@status)",
   ).run(p);
+  if (options.dueId)
+    log(db, m, "payment_checked_unpaid", {
+      dueId: options.dueId,
+      amount: rows[0].amount,
+      proposal: p.id,
+      source: "merchant_confirmation",
+    });
   return { ...p, payload: rows };
 }
 export function execute(db, m, id, approve) {
@@ -374,7 +485,8 @@ export function execute(db, m, id, approve) {
     }
     if (p.expires < Date.now()) throw new DomainError("APPROVAL_EXPIRED", 409);
     if (approve) {
-      const current = reminderRows(db, m);
+      const scoped = JSON.parse(p.payload)[0]?.scopeDueId;
+      const current = reminderRows(db, m, scoped);
       if (JSON.stringify(current) !== p.payload)
         throw new DomainError("PROPOSAL_CHANGED", 409);
     }
@@ -400,6 +512,10 @@ export function updateShop(db, m, values) {
 }
 export function resetDemo(db, m) {
   db.transaction(() => {
+    db.prepare("DELETE FROM voice_audio_requests WHERE merchant=?").run(m);
+    db.prepare("DELETE FROM voice_turns WHERE merchant=?").run(m);
+    db.prepare("DELETE FROM voice_drafts WHERE merchant=?").run(m);
+    db.prepare("DELETE FROM due_terms WHERE merchant=?").run(m);
     db.prepare(
       "DELETE FROM entry_customers WHERE entry_id IN (SELECT id FROM entries WHERE merchant=?)",
     ).run(m);
@@ -488,6 +604,10 @@ export function exportArchive(db, m) {
     "planning_initialized",
     "customers",
     "schedule_requests",
+    "due_terms",
+    "voice_drafts",
+    "voice_turns",
+    "voice_audio_requests",
   ]) {
     tables[table] = db
       .prepare(

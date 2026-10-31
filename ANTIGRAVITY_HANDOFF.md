@@ -49,3 +49,21 @@ Next phase: browser/device fault-injection journeys (lost response, offline/relo
 
 ## Android and hosting preparation (31 October 2026)
 Android WebView source and `npm run android:check` / `android:build` scripts are prepared. Compile/sign verification passed using a non-working example.invalid probe; no shareable APK or online deployment exists yet. Real APK build requires a healthy HTTPS backend with voice configured and private test access enabled. Docker/Render files are proposals; account selection and any hosting charges remain pending. Secrets and signing material stay in ignored privacy/, databases in ignored data/. Native microphone/device runtime checks remain unverified. Latest validation: 33 tests plus web build and formatting passed. Hosting/APK work was paused at the owner's request; repository publication does not deploy the app.
+
+
+## Friendly reminder implementation
+Customer-specific simple respectful drafts now include name, exact outstanding amount, shop signature and already-paid clarification in the merchant language. Drafts are frozen in proposal payload/audit; changes to dues, shop or language invalidate pending approval. Preview and Listen use these actual drafts. Delivery remains explicitly simulated; no WhatsApp credentials or customer consent records are configured. No automatic due-date queue, live Paytm import or lender scoring was added in this step. Munim branding retained; Zuno remains an optional future naming decision. Validation: 34 tests and web build passed.
+
+
+## Dated udhaar foundation — 31 October
+Added due_terms linked to original credit entry and merchant. Optional validated promised date in entry review; immutable retry checks include date. GET /api/follow-ups and state.followUps derive current outstanding dues, scheduled/payment_check_required status; partial payments adjust balance and closed/reversed dues disappear. Home/Khata show queue with record-payment action. Reset/export include terms. Existing undated dues remain undated. No background sending or notification, customer phone/consent integration, voice due-date extraction, payment-check confirmation persistence or WhatsApp delivery implemented yet. Next: these workflow pieces before claiming voice-only automation. 35 tests plus build passed. Backup: ignored data/backups/before-dated-dues-20261031.sqlite.
+
+
+## Voice-ledger phase 1 and owner voice — current
+See docs/VOICE_LEDGER_PHASE1.md. Conversation draft/clarification/explicit save implemented with merchant isolation, TTL, revisions and replay controls. Header mic opens ledger mode; owner enrollment is required for audio path. Local Python SpeechBrain ECAPA prototype installed and model inference smoke-tested. Encrypted local templates, per-command match before Sarvam, no public Python port. Human enrollment and real mic/owner-vs-impostor/noisy/replay tests remain pending: never claim secure owner-only authentication or liveness. Typed fallback is manual authenticated input, not voice verification. No global Zuno rename; no added inventory/lender scoring. Model, keys, venv and templates ignored under privacy/. See phase document for exact limits and setup.
+
+Validation: 39 Node tests, web build, formatting and Python encrypted-template unit test pass. Browser typed ₹200 draft/cancellation checked without creating a ledger entry. CPU model load/inference passed; human speaker verification is still untested. Enrollment and command mic tests require owner participation.
+
+
+## Zuno step 2 — promises and focused follow-up
+Read docs/ZUNO_WORKFLOW_PROGRESS.md. Voice-ledger now asks promised payment date (or explicit no-date), parses common English/Hindi/Hinglish dates locally, separates date numbers from monetary extraction, and includes the exact date in final confirmation/save. Due follow-up can prepare only that debt after explicit unpaid confirmation; pending drafts reused, stale approvals blocked, future-promised debts excluded from generic reminders. 42 tests + build pass. WhatsApp setup explicitly unavailable per owner: remain simulated, do not provision/send. No wake-word/background push or voice reminder approval claimed.

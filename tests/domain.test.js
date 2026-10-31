@@ -12,6 +12,8 @@ import {
   propose,
   execute,
   resetDemo,
+  followUpQueue,
+  exportArchive,
 } from "../server/domain.js";
 import { parseIntent } from "../server/voice.js";
 const input = (values) => ({
@@ -138,5 +140,85 @@ test("same customer gets one reminder covering multiple outstanding entries", ()
   const p = propose(db, "m");
   assert.equal(p.payload.length, 4);
   assert.equal(p.payload.find((r) => r.name === "Sharma ji").amount, 250000);
+  db.close();
+});
+
+test("personalized reminder snapshots use exact dues and become stale after shop changes", () => {
+  const db = database(":memory:");
+  seed(db, "friendly");
+  db.prepare("UPDATE merchants SET shop=?,language=? WHERE id=?").run(
+    "Gupta Kirana",
+    "hindi",
+    "friendly",
+  );
+  const p = propose(db, "friendly");
+  for (const row of p.payload) {
+    assert.ok(row.message.includes(row.name));
+    assert.ok(row.message.includes("Gupta Kirana"));
+    assert.ok(
+      row.message.includes(
+        new Intl.NumberFormat("en-IN", {
+          style: "currency",
+          currency: "INR",
+          maximumFractionDigits: 2,
+        }).format(row.amount / 100),
+      ),
+    );
+    assert.ok(row.message.includes("भुगतान कर चुके"));
+  }
+  db.prepare("UPDATE merchants SET shop=? WHERE id=?").run(
+    "New Shop",
+    "friendly",
+  );
+  assert.throws(() => execute(db, "friendly", p.id, true), /PROPOSAL_CHANGED/);
+  db.close();
+});
+
+test("dated dues queue tracks remaining amount, isolation, replay and closed dues", () => {
+  const db = database(":memory:");
+  seed(db, "dated");
+  seed(db, "other");
+  const entry = input({
+    kind: "udhaar",
+    amount: 20000,
+    name: "Nikhil",
+    dueDate: "2026-11-03",
+  });
+  const d = addEntry(db, "dated", entry);
+  assert.equal(addEntry(db, "dated", entry).id, d.id);
+  assert.throws(
+    () => addEntry(db, "dated", { ...entry, dueDate: "2026-11-04" }),
+    /IDEMPOTENCY_CONFLICT/,
+  );
+  assert.throws(
+    () =>
+      addEntry(db, "dated", input({ kind: "udhaar", dueDate: "2026-02-30" })),
+    /INVALID_DUE_DATE/,
+  );
+  assert.throws(
+    () => addEntry(db, "dated", input({ dueDate: "2026-11-03" })),
+    /INVALID_DUE_DATE/,
+  );
+  assert.equal(followUpQueue(db, "dated", "2026-11-02")[0].status, "scheduled");
+  assert.equal(
+    followUpQueue(db, "dated", "2026-11-03")[0].status,
+    "payment_check_required",
+  );
+  assert.equal(followUpQueue(db, "other").length, 0);
+  addEntry(
+    db,
+    "dated",
+    input({ kind: "collection", dueId: d.id, amount: 5000 }),
+  );
+  assert.equal(followUpQueue(db, "dated")[0].outstanding, 15000);
+  assert.equal(exportArchive(db, "dated").tables.due_terms.length, 1);
+  addEntry(
+    db,
+    "dated",
+    input({ kind: "collection", dueId: d.id, amount: 15000 }),
+  );
+  assert.equal(followUpQueue(db, "dated").length, 0);
+  resetDemo(db, "dated");
+  assert.equal(followUpQueue(db, "dated").length, 0);
   db.close();
 });

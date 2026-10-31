@@ -64,6 +64,58 @@ import "@fontsource/noto-sans-devanagari/400.css";
 import "@fontsource/noto-sans-devanagari/600.css";
 import "./styles.css";
 const errors = {
+  PAYMENT_CHECK_REQUIRED: [
+    "Confirm that payment has not been received before preparing a reminder.",
+    "रिमाइंडर से पहले जाँचें कि भुगतान नहीं मिला है।",
+    "Reminder se pehle payment na milna confirm karein.",
+  ],
+  FOLLOW_UP_NOT_DUE: [
+    "The promised date has not arrived yet.",
+    "वादा की तारीख अभी नहीं आई है।",
+    "Promise date abhi nahi aayi.",
+  ],
+
+  OWNER_VOICE_MISMATCH: [
+    "Voice did not match the enrolled owner. Nothing was recorded. Try again in a quiet place.",
+    "आवाज़ मालिक से नहीं मिली। कोई एंट्री नहीं बनी। शांत जगह फिर कोशिश करें।",
+    "Awaaz owner se match nahi hui. Koi entry nahi bani. Quiet jagah retry karein.",
+  ],
+  OWNER_VOICE_UNAVAILABLE: [
+    "Local voice service is unavailable. Retry or use the manual form.",
+    "लोकल वॉइस सेवा उपलब्ध नहीं। फिर प्रयास करें या फॉर्म उपयोग करें।",
+    "Local voice service available nahi. Retry ya manual form use karein.",
+  ],
+  OWNER_VOICE_NOT_CONFIGURED: [
+    "Set up your owner voice first.",
+    "पहले अपनी आवाज़ सेट करें।",
+    "Pehle apni awaaz set karein.",
+  ],
+  OWNER_ALREADY_ENROLLED: [
+    "An owner voice is already enrolled for this workspace.",
+    "इस खाते की आवाज़ पहले से सेट है।",
+    "Is workspace ki awaaz pehle se set hai.",
+  ],
+  VOICE_SAMPLE_DURATION: [
+    "Use 10–25 seconds for enrollment; 3–25 seconds for commands.",
+    "सेटअप में 10–25 सेकंड, आदेश में 3–25 सेकंड बोलें।",
+    "Setup mein 10–25 second, command mein 3–25 second bolein.",
+  ],
+  VOICE_SAMPLE_TOO_QUIET: [
+    "Audio is too quiet. Speak clearly and retry.",
+    "आवाज़ बहुत धीमी है। साफ बोलकर फिर प्रयास करें।",
+    "Awaaz bahut dheemi hai. Clear bolkar retry karein.",
+  ],
+  VOICE_DRAFT_CHANGED: [
+    "Draft changed or expired. Start a new entry.",
+    "ड्राफ्ट बदला या समाप्त हुआ। नई एंट्री शुरू करें।",
+    "Draft badla ya expire hua. Nayi entry shuru karein.",
+  ],
+  VOICE_DRAFT_CLOSED: [
+    "This entry is closed. Start a new entry.",
+    "यह एंट्री पूरी हो चुकी है। नई एंट्री शुरू करें।",
+    "Ye entry closed hai. Nayi entry shuru karein.",
+  ],
+
   AUDIO_TOO_LARGE: [
     "Use audio smaller than 5 MB.",
     "5 MB से छोटा ऑडियो चुनें।",
@@ -1176,6 +1228,54 @@ function App() {
               </button>
             </>
           )}
+          {(screen === "home" || screen === "khata") &&
+            state.followUps?.length > 0 && (
+              <section className="card" aria-label={t("followUp")}>
+                <h3>{t("followUp")}</h3>
+                {state.followUps.map((f) => (
+                  <div className="due-card" key={f.dueId}>
+                    <strong>
+                      {f.name} · {money(f.outstanding)}
+                    </strong>
+                    <p>
+                      {shortDate(f.dueDate, lang)} ·{" "}
+                      {f.status === "payment_check_required"
+                        ? t("paymentCheck")
+                        : t("promiseDate")}
+                    </p>
+                    <button
+                      className="secondary"
+                      onClick={() =>
+                        openEntry({
+                          kind: "collection",
+                          dueId: f.dueId,
+                          name: f.name,
+                        })
+                      }
+                    >
+                      {t("recordPayment")}
+                    </button>
+                    {f.status === "payment_check_required" && (
+                      <button
+                        className="secondary"
+                        disabled={busy || !online}
+                        onClick={() =>
+                          run(async () => {
+                            const proposal = await api("/actions/propose", {
+                              method: "POST",
+                              body: { dueId: f.dueId, unpaidConfirmed: true },
+                            });
+                            setModal({ type: "approval", proposal });
+                          })
+                        }
+                      >
+                        {t("unpaidPrepare")}
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </section>
+            )}
           <footer className="app-footer">
             <Leaf size={13} /> Munim · {t("demoOnly")}
           </footer>
@@ -1336,6 +1436,14 @@ function App() {
           )}
           {modal.type === "voice" && (
             <Voice
+              onSaved={async () => {
+                try {
+                  await refresh();
+                  setToast(t("saved"));
+                } catch {
+                  setToast(t("savedNeedsRefresh"));
+                }
+              }}
               scenario={scenario}
               t={t}
               lang={lang}
@@ -1372,17 +1480,16 @@ function App() {
                       </small>
                     </span>
                     <strong>{money(p.amount)}</strong>
+                    <p className="reminder-draft">{p.message}</p>
                   </div>
                 ))}
-              </div>
-              <div className="message-preview">
-                <Send size={17} />
-                <p>{t("message")}</p>
               </div>
               <button
                 className="secondary"
                 disabled={!health.voiceConfigured || busy}
-                onClick={() => speak(t("message"))}
+                onClick={() =>
+                  speak(modal.proposal.payload.map((p) => p.message).join("\n"))
+                }
               >
                 <Volume2 size={18} />
                 {t("hear")}

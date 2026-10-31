@@ -2368,3 +2368,43 @@ blockquote {
   color: #6d817a;
   margin-top: 4px;
 }
+
+.approval-recipients > div {
+  flex-wrap: wrap;
+}
+.approval-recipients .reminder-draft {
+  flex-basis: 100%;
+  margin: 8px 0 0;
+  padding: 12px;
+  border-radius: 12px;
+  background: #eef8f3;
+  color: #264b40;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  font-weight: 400;
+}
+
+.owner-enrollment {
+  display: block;
+}
+.owner-enrollment label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+.owner-enrollment input[type="checkbox"] {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  min-height: 20px;
+  margin: 2px 0 0;
+  padding: 0;
+  accent-color: #087657;
+}
+.owner-enrollment > button {
+  margin-top: 12px;
+  width: 100%;
+}

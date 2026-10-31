@@ -527,6 +527,79 @@ const words = {
     "दबाने पर ही रिकॉर्डिंग। ऑडियो सर्वम को भेजा जाता है; ऐप इसे सहेजता नहीं।",
     "Tap karne par recording. Audio Sarvam ko jayega; app store nahi karta.",
   ],
+  promiseDate: [
+    "Promised payment date (optional)",
+    "भुगतान का वादा: तारीख (वैकल्पिक)",
+    "Payment ki promised date (optional)",
+  ],
+  promiseDateHint: [
+    "On this date, check payment before preparing a reminder.",
+    "इस तारीख को रिमाइंडर से पहले भुगतान जाँचें।",
+    "Is date par reminder se pehle payment check karein.",
+  ],
+  unpaidPrepare: [
+    "Not received — prepare reminder",
+    "भुगतान नहीं मिला — रिमाइंडर बनाएँ",
+    "Payment nahi mila — reminder banayein",
+  ],
+  followUp: ["Payment follow-ups", "भुगतान फॉलो-अप", "Payment follow-ups"],
+  paymentCheck: [
+    "Check whether payment was received",
+    "जाँचें: भुगतान मिला था?",
+    "Check karein: payment mila tha?",
+  ],
+  removeOwnerVoice: [
+    "Remove my voice template",
+    "मेरी आवाज़ का टेम्पलेट हटाएँ",
+    "Mera voice template hatayein",
+  ],
+  removeOwnerVoiceConfirm: [
+    "Delete your local voice template? Voice-ledger recording will lock until you enroll again.",
+    "लोकल आवाज़ टेम्पलेट हटाएँ? दोबारा सेटअप तक वॉइस बही रिकॉर्डिंग बंद होगी।",
+    "Local voice template delete karein? Dobara setup tak voice ledger locked rahega.",
+  ],
+  ownerVoicePrototype: [
+    "Local owner voice matching enabled (prototype). Replay/clone resistance and noisy-shop accuracy are not validated. Confirm each save.",
+    "लोकल आवाज़ मिलान चालू (प्रोटोटाइप)। रिकॉर्डिंग/क्लोन और शोर में सुरक्षा प्रमाणित नहीं है। हर सेव की पुष्टि करें।",
+    "Local owner voice match on (prototype). Replay/clone aur noise tests pending hain. Har save confirm karein.",
+  ],
+  ownerVoiceConsent: [
+    "I consent to a local encrypted voice template for my workspace. Raw enrollment audio is discarded. This is a prototype, not secure voice login.",
+    "मैं अपने खाते के लिए लोकल एन्क्रिप्टेड आवाज़ टेम्पलेट की अनुमति देता हूँ। मूल रिकॉर्डिंग नहीं रखी जाएगी। यह प्रोटोटाइप है, सुरक्षित वॉइस लॉगिन नहीं।",
+    "Main workspace ke local encrypted voice template ki permission deta hoon. Raw recording store nahi hogi. Ye prototype hai, secure voice login nahi.",
+  ],
+  enrollOwnerVoice: [
+    "Set up my voice",
+    "मेरी आवाज़ सेट करें",
+    "Meri awaaz set karein",
+  ],
+  ownerEnrollmentGuide: [
+    "Tap the microphone. Speak alone naturally for 10–25 seconds, then stop. Use your own voice, not a recording.",
+    "माइक दबाएँ। अकेले अपनी आवाज़ में 10–25 सेकंड सामान्य बोलें, फिर रोकें। किसी रिकॉर्डिंग का उपयोग न करें।",
+    "Mic dabayein. Akele apni awaaz mein 10–25 second normally bolein, phir stop karein. Recording use na karein.",
+  ],
+  voiceLedger: ["Voice ledger", "वॉइस बही", "Voice ledger"],
+  businessQuestions: ["Ask about business", "हिसाब पूछें", "Hisaab poochhein"],
+  ownerVoicePending: [
+    "Owner voice verification is not configured. Recording is locked in ledger mode. Test the conversation by typing; this does not verify speaker identity.",
+    "मालिक की आवाज़ की पहचान अभी सेट नहीं है। बही मोड में रिकॉर्डिंग बंद है। टाइप करके बातचीत जाँचें; यह आवाज़ की पहचान नहीं है।",
+    "Owner voice verification abhi set nahi hai. Ledger recording locked hai. Type karke conversation test karein; ye speaker verification nahi hai.",
+  ],
+  draftOnly: [
+    "Draft only — not saved",
+    "केवल ड्राफ्ट — सेव नहीं हुआ",
+    "Sirf draft — save nahi hua",
+  ],
+  retryVoiceTurn: [
+    "Response uncertain. Retry the same turn before continuing.",
+    "जवाब स्पष्ट नहीं मिला। आगे बढ़ने से पहले वही चरण दोबारा भेजें।",
+    "Response clear nahi mila. Aage badhne se pehle wahi turn retry karein.",
+  ],
+  newVoiceEntry: [
+    "Start new entry",
+    "नई एंट्री शुरू करें",
+    "Nayi entry shuru karein",
+  ],
   hear: ["Listen", "सुनें", "Sunein"],
   approve: [
     "Approve simulation",
